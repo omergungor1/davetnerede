@@ -20,7 +20,7 @@ export function Header() {
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder="Düğün firmasi ara"
+                                placeholder="Davet Salonu ara"
                                 className="w-full py-2 pl-3 pr-10 border border-border rounded-md text-sm focus:outline-none focus:border-primary"
                             />
                             <button className="absolute right-0 top-0 h-full px-3 text-darkgray">
