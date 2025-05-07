@@ -10,6 +10,7 @@ export function Footer() {
                 <div className="flex flex-col md:flex-row justify-between mb-8">
                     <div>
                         <Link href="/" className="flex items-center mb-4">
+                            <img src="/images/logo.png" alt="davetnerede.com" className="w-10 h-10" />
                             <span className="text-primary font-bold text-2xl">davetnerede</span>
                         </Link>
                         <p className="text-sm text-darkgray mb-4 max-w-md">

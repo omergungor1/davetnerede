@@ -1,7 +1,10 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import { Layout } from '../../../components/layout';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardTitle } from '../../../components/ui/card';
-import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle } from 'lucide-react';
+import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle, X } from 'lucide-react';
 
 
 // Örnek mekan verisi
@@ -101,6 +104,46 @@ const venue = {
 };
 
 export default function VenueDetail({ params }) {
+    // Resim galerisi için state
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    const openLightbox = (index) => {
+        setActiveImageIndex(index);
+        setLightboxOpen(true);
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+        setLightboxOpen(false);
+        document.body.style.overflow = 'auto';
+    };
+
+    const nextImage = () => {
+        setActiveImageIndex((prevIndex) => (prevIndex + 1) % venue.images.length);
+    };
+
+    const prevImage = () => {
+        setActiveImageIndex((prevIndex) => (prevIndex - 1 + venue.images.length) % venue.images.length);
+    };
+
+    // Klavye olayları için useEffect
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!lightboxOpen) return;
+
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [lightboxOpen]);
+
     // Gerçek uygulamada params.id ile API'den veri çekilecek
 
     return (
@@ -116,44 +159,118 @@ export default function VenueDetail({ params }) {
 
                 {/* Mekan Başlığı ve Temel Bilgiler */}
                 <div className="mb-6">
-                    <div className="flex justify-between items-start">
-                        <h1 className="text-2xl md:text-3xl font-bold mb-2 text-text">{venue.name}</h1>
-                        <div className="flex items-center">
-                            <Button variant="outline" size="sm" className="flex items-center mr-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div>
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-text">{venue.name}</h1>
+                            <p className="text-darkgray flex items-center text-sm">
+                                <MapPin className="h-4 w-4 mr-1 text-darkgray" />
+                                {venue.address}
+                            </p>
+                        </div>
+                        <div className="flex items-center flex-wrap gap-2">
+                            <Button variant="outline" size="sm" className="flex items-center">
                                 <Heart className="w-4 h-4 mr-1" />
-                                Favori
+                                <span className="whitespace-nowrap">Favori</span>
                             </Button>
-                            <div className="flex items-center">
-                                <Star className="h-5 w-5 text-yellow-400 mr-1" />
-                                <span className="text-lg font-semibold text-text">{venue.rating}</span>
-                                <span className="text-sm text-darkgray ml-1">({venue.reviewCount})</span>
+                            <div className="flex items-center bg-white border border-border rounded-md px-2 py-1">
+                                <Star className="h-4 w-4 text-yellow-400 mr-1" />
+                                <span className="font-semibold text-text">{venue.rating}</span>
+                                <span className="text-xs text-darkgray ml-1">({venue.reviewCount})</span>
                             </div>
                         </div>
                     </div>
-                    <p className="text-darkgray flex items-center">
-                        <MapPin className="h-4 w-4 mr-1 text-darkgray" />
-                        {venue.address}
-                    </p>
                 </div>
 
                 {/* Galeri */}
                 <div className="grid grid-cols-4 gap-2 mb-8">
-                    <div className="col-span-2 row-span-2">
+                    <div className="col-span-2 row-span-2 cursor-pointer" onClick={() => openLightbox(0)}>
                         <img src={venue.images[0]} alt={venue.name} className="w-full h-full object-cover rounded-l-lg" />
                     </div>
-                    <div>
+                    <div className="cursor-pointer" onClick={() => openLightbox(1)}>
                         <img src={venue.images[1]} alt={venue.name} className="w-full h-full object-cover" />
                     </div>
-                    <div>
+                    <div className="cursor-pointer" onClick={() => openLightbox(2)}>
                         <img src={venue.images[2]} alt={venue.name} className="w-full h-full object-cover rounded-tr-lg" />
                     </div>
-                    <div>
+                    <div className="cursor-pointer" onClick={() => openLightbox(1)}>
                         <img src={venue.images[1]} alt={venue.name} className="w-full h-full object-cover" />
                     </div>
-                    <div>
+                    <div className="cursor-pointer" onClick={() => openLightbox(3)}>
                         <img src={venue.images[3]} alt={venue.name} className="w-full h-full object-cover rounded-br-lg" />
                     </div>
                 </div>
+
+                {/* Lightbox */}
+                {lightboxOpen && (
+                    <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center">
+                        <div className="relative w-full max-w-4xl mx-auto px-4">
+                            <button
+                                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                                onClick={closeLightbox}
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+
+                            <div className="relative">
+                                <img
+                                    src={venue.images[activeImageIndex]}
+                                    alt={`${venue.name} - Görsel ${activeImageIndex + 1}`}
+                                    className="w-full h-auto max-h-[70vh] object-contain mx-auto"
+                                />
+
+                                <button
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-r-md"
+                                    onClick={prevImage}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+
+                                <button
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-l-md"
+                                    onClick={nextImage}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="text-center text-white mt-2">
+                                {activeImageIndex + 1} / {venue.images.length}
+                            </div>
+
+                            {/* Thumbnail gallery */}
+                            <div className="flex justify-center mt-4 gap-2 overflow-x-auto py-2 max-w-full">
+                                {venue.images.map((image, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveImageIndex(index)}
+                                        className={`w-16 h-16 flex-shrink-0 rounded overflow-hidden focus:outline-none ${index === activeImageIndex
+                                            ? 'ring-2 ring-primary border border-primary'
+                                            : 'opacity-70 hover:opacity-100'
+                                            }`}
+                                    >
+                                        <img
+                                            src={image}
+                                            alt={`Thumbnail ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-4 left-0 right-0 text-center">
+                            <div className="inline-flex bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 text-xs text-white">
+                                <button onClick={closeLightbox} className="hover:text-primary transition-colors">
+                                    Galeriden Çık (ESC)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Ana İçerik */}
                 <div className="flex flex-col lg:flex-row gap-8">

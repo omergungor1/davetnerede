@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Layout } from '../../components/layout';
 import { VenueCard } from '../../components/venue-card';
 
@@ -7,6 +10,12 @@ const venues = [
         id: 1,
         name: 'Mövenpick Hotel İstanbul Asia Airport',
         image: '/images/salon-1.webp',
+        images: [
+            '/images/salon-1.webp',
+            '/images/salon-8.webp',
+            '/images/salon-13.jpg',
+            '/images/salon-4.webp'
+        ],
         rating: '5.0',
         reviewCount: '(45)',
         location: 'Pendik',
@@ -20,6 +29,11 @@ const venues = [
         id: 2,
         name: 'Casamento',
         image: '/images/salon-2.webp',
+        images: [
+            '/images/salon-2.webp',
+            '/images/salon-6.webp',
+            '/images/salon-9.jpg'
+        ],
         rating: '5.0',
         reviewCount: '(31)',
         location: 'Sarıyer',
@@ -33,6 +47,12 @@ const venues = [
         id: 3,
         name: 'Plus Hotel',
         image: '/images/salon-4.webp',
+        images: [
+            '/images/salon-4.webp',
+            '/images/salon-10.jpg',
+            '/images/salon-12.jpg',
+            '/images/salon-15.jpg'
+        ],
         rating: '5.0',
         reviewCount: '(111)',
         features: ['Butik düğüne uygun', 'Gün ışığı alan', 'DJ', 'Büyük gelin odası', 'Alkol servisi yok', 'Kolay ulaşım', 'Nişan süslemesi', 'Nişan tepsisi'],
@@ -44,6 +64,11 @@ const venues = [
         id: 4,
         name: 'May Otel',
         image: '/images/salon-5.webp',
+        images: [
+            '/images/salon-5.webp',
+            '/images/salon-11.jpg',
+            '/images/salon-14.jpg'
+        ],
         rating: '4.9',
         reviewCount: '(11)',
         capacity_range: '10 - 95',
@@ -56,6 +81,12 @@ const venues = [
         id: 5,
         name: 'Gopark Event',
         image: '/images/salon-6.webp',
+        images: [
+            '/images/salon-6.webp',
+            '/images/salon-16.jpg',
+            '/images/salon-1.webp',
+            '/images/salon-2.webp'
+        ],
         rating: '5.0',
         reviewCount: '(112)',
         location: 'Gaziosmanpaşa',
@@ -66,14 +97,65 @@ const venues = [
 ];
 
 export default function DugunMekanlari() {
+    const [filtersVisible, setFiltersVisible] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+        const handleResize = () => {
+            setFiltersVisible(window.innerWidth >= 768);
+        };
+
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    const toggleFilters = () => {
+        setFiltersVisible(!filtersVisible);
+    };
+
+    const activeFilterCount = 7;
+
     return (
         <Layout>
             <div className="bg-background min-h-screen">
                 <div className="container mx-auto px-4 py-8">
+                    {/* Mobil Filtre Toggle Butonu */}
+                    <div className="md:hidden mb-4">
+                        <button
+                            onClick={toggleFilters}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg border ${filtersVisible ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-text'} font-medium transition-colors`}
+                        >
+                            <span className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 text-primary`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                </svg>
+                                {filtersVisible ? 'Filtreleri Gizle' : 'Filtreler'}
+                            </span>
+                            <span className="flex items-center">
+                                <span className="text-xs mr-1 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">{activeFilterCount}</span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={`h-5 w-5 transition-transform ${filtersVisible ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+
                     <div className="flex flex-col md:flex-row gap-8">
                         {/* Sol Filtreler */}
-                        <div className="w-full md:w-1/4 lg:w-1/5">
-                            <div className="bg-white rounded-lg border border-border p-4 mb-4">
+                        <div className={`w-full md:w-1/4 lg:w-1/5 transition-all duration-300 ${isClient ? (filtersVisible ? 'block' : 'hidden md:block') : 'hidden md:block'}`}>
+                            <div className="bg-white rounded-lg border border-border p-4 mb-4 shadow-sm">
                                 <div className="mb-4">
                                     <label className="block text-sm text-darkgray mb-2">Söz, Nişan Mekanları</label>
                                     <div className="relative">
@@ -301,27 +383,27 @@ export default function DugunMekanlari() {
                             </div>
 
                             {/* Sayfalama */}
-                            <div className="mt-10 flex items-center justify-between">
-                                <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-4 py-2 hover:bg-lightgray">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                            <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+                                <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 sm:mr-2">
                                         <polyline points="15 18 9 12 15 6"></polyline>
                                     </svg>
-                                    Önceki
+                                    <span className="hidden xs:inline">Önceki</span>
                                 </button>
 
-                                <div className="flex items-center space-x-1">
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm bg-primary text-white rounded-md">1</span>
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">2</span>
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">3</span>
-                                    <span className="inline-flex items-center justify-center h-8 px-2 text-sm text-darkgray">...</span>
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">7</span>
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">8</span>
-                                    <span className="inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">9</span>
+                                <div className="flex items-center space-x-1 mx-auto">
+                                    <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm bg-primary text-white rounded-md">1</span>
+                                    <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">2</span>
+                                    <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">3</span>
+                                    <span className="hidden sm:inline-flex items-center justify-center h-8 px-2 text-sm text-darkgray">...</span>
+                                    <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">7</span>
+                                    <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">8</span>
+                                    <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">9</span>
                                 </div>
 
-                                <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-4 py-2 hover:bg-lightgray">
-                                    Sonraki
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2">
+                                <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray">
+                                    <span className="hidden xs:inline">Sonraki</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 sm:ml-2">
                                         <polyline points="9 18 15 12 9 6"></polyline>
                                     </svg>
                                 </button>
