@@ -1,9 +1,13 @@
+"use client"
 import Link from 'next/link';
+import { useState } from 'react';
 import { Layout } from '../components/layout';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardTitle } from '../components/ui/card';
 import { VenueCard } from '../components/venue-card';
 import { Search, MapPin, ChevronRight } from 'lucide-react';
+import { Modal } from '../components/ui/modal';
+import { RequestQuoteForm } from '../components/request-quote-form';
 
 // Örnek veri
 const featuredVenues = [
@@ -19,7 +23,7 @@ const featuredVenues = [
   {
     id: 2,
     title: 'Casamento',
-    image: '/images/salon-2.webp',
+    image: '/images/salon-6.webp',
     location: 'Sarıyer, İstanbul',
     price: '3.500 TL',
     discount: 'Hediye',
@@ -28,7 +32,7 @@ const featuredVenues = [
   {
     id: 3,
     title: 'Plus Hotel',
-    image: '/images/salon-4.webp',
+    image: '/images/salon-12.webp',
     location: 'Şişli, İstanbul',
     price: '65.000 TL',
     discount: '%22',
@@ -62,22 +66,22 @@ const weddingStories = [
 const galleries = [
   {
     id: 1,
-    title: 'Düğün Mekanları Özel Galerisi',
+    title: 'Davet Salonları Özel Galerisi',
     image: '/images/salon-12.jpg',
   },
   {
     id: 2,
-    title: 'En İyi Oteller Galerisi',
+    title: 'En İyi Davet Salonları Galerisi',
     image: '/images/salon-13.jpg',
   },
   {
     id: 3,
-    title: 'Açık Hava Düğünleri',
+    title: 'Açık Hava Davet Salonları Galerisi',
     image: '/images/salon-14.jpg',
   },
   {
     id: 4,
-    title: 'Kapalı Salon Düğünleri',
+    title: 'Kapalı Davet Salonları Galerisi',
     image: '/images/salon-15.jpg',
   },
 ];
@@ -85,27 +89,27 @@ const galleries = [
 const categories = [
   {
     id: 1,
-    title: 'Düğün Mekanları',
+    title: 'Davet Salonları',
     image: '/images/salon-12.jpg',
     url: '/dugun-mekanlari',
   },
   {
     id: 2,
-    title: 'Düğün Fotoğrafçıları',
+    title: 'Davet Salon Fotoğrafçıları',
     image: '/images/salon-14.jpg',
     url: '/dugun-fotografcilari',
   },
   {
     id: 3,
-    title: 'Gelinlik Modelleri',
+    title: 'Davet Salon Modelleri',
     image: '/images/salon-15.jpg',
-    url: '/gelinlik-modelleri',
+    url: '/davet-salon-modelleri',
   },
   {
     id: 4,
-    title: 'Düğün Organizasyon',
+    title: 'Davet Salon Organizasyonları',
     image: '/images/salon-16.jpg',
-    url: '/dugun-organizasyon',
+    url: '/davet-salon-organizasyonlari',
   },
 ];
 
@@ -134,37 +138,91 @@ const testimonials = [
 ];
 
 function FeaturedVenueCard({ title, image, location, price, discount, rating }) {
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [quoteSubmitted, setQuoteSubmitted] = useState(false);
+
+  const openQuoteModal = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsQuoteModalOpen(true);
+  };
+
+  const handleQuoteSuccess = () => {
+    setQuoteSubmitted(true);
+    setTimeout(() => {
+      setIsQuoteModalOpen(false);
+      setTimeout(() => {
+        setQuoteSubmitted(false);
+      }, 500);
+    }, 2000);
+  };
+
   return (
-    <Link href={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`} className="group">
-      <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+    <>
+      <Link href={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`} className="group">
+        <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <img
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
 
-          {discount && (
-            <div className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
-              {discount}
+            {discount && (
+              <div className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
+                {discount}
+              </div>
+            )}
+
+            <div className="absolute bottom-3 right-3 bg-white text-primary text-xs font-semibold px-2 py-1 rounded-full flex items-center">
+              <span className="mr-1">{rating}</span>
+              ★
             </div>
-          )}
 
-          <div className="absolute bottom-3 right-3 bg-white text-primary text-xs font-semibold px-2 py-1 rounded-full flex items-center">
-            <span className="mr-1">{rating}</span>
-            ★
+            <button
+              onClick={openQuoteModal}
+              className="absolute bottom-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md hover:bg-primary/90"
+            >
+              Teklif Al
+            </button>
+          </div>
+
+          <div className="p-4">
+            <h3 className="font-medium text-text group-hover:text-primary truncate">{title}</h3>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-darkgray text-sm">{location}</p>
+              <p className="text-text font-semibold">{price}</p>
+            </div>
           </div>
         </div>
+      </Link>
 
-        <div className="p-4">
-          <h3 className="font-medium text-text group-hover:text-primary truncate">{title}</h3>
-          <div className="flex justify-between items-center mt-2">
-            <p className="text-darkgray text-sm">{location}</p>
-            <p className="text-text font-semibold">{price}</p>
+      <Modal
+        isOpen={isQuoteModalOpen}
+        onClose={() => setIsQuoteModalOpen(false)}
+        title={quoteSubmitted ? "Teşekkürler!" : "Ücretsiz Teklif Alın"}
+      >
+        {quoteSubmitted ? (
+          <div className="py-6 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Talebiniz Alındı!</h3>
+            <p className="text-sm text-gray-500">
+              Teklif talebiniz başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.
+            </p>
           </div>
-        </div>
-      </div>
-    </Link>
+        ) : (
+          <RequestQuoteForm
+            venueName={title}
+            onSuccess={handleQuoteSuccess}
+            onClose={() => setIsQuoteModalOpen(false)}
+          />
+        )}
+      </Modal>
+    </>
   );
 }
 
@@ -205,9 +263,11 @@ export default function Home() {
                     className="w-full pl-10 pr-4 py-3 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
-                <Button size="lg" variant="primary" className="whitespace-nowrap">
-                  Firmaları Listele
-                </Button>
+                <Link href="/dugun-mekanlari">
+                  <Button size="lg" variant="primary" className="whitespace-nowrap">
+                    Firmaları Listele
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -273,7 +333,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2 text-text">Yerinizi Ayırtın</h3>
               <p className="text-darkgray">
-                En uygun mekanı seçin ve düğün gününüz için yerinizi hemen ayırtın.
+                En uygun mekanı seçin ve davetiniz için yerinizi hemen ayırtın.
               </p>
             </div>
           </div>
@@ -286,7 +346,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-text mb-4">Popüler Kategoriler</h2>
             <p className="text-darkgray max-w-2xl mx-auto">
-              Düğününüz için ihtiyacınız olan tüm hizmetleri bulun.
+              Davetiniz için ihtiyacınız olan tüm hizmetleri bulun.
             </p>
           </div>
 
@@ -388,6 +448,13 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <div className="text-center mt-8">
+            <Link href="/gercek-nisan-hikayeleri" className="text-primary font-medium hover:underline flex items-center justify-center">
+              Tüm Nişan Hikayelerini Keşfedin
+              <ChevronRight size={16} className="ml-1" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -397,7 +464,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-text mb-4">Mutlu Çiftler</h2>
             <p className="text-darkgray max-w-2xl mx-auto">
-              Platformumuz üzerinden düğün mekanlarını bulan çiftlerin yorumları.
+              Platformumuz üzerinden davet salonlarını bulan çiftlerin yorumları.
             </p>
           </div>
 
@@ -432,7 +499,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="/images/salon-13.jpg"
-            alt="Düğün salonu"
+            alt="Davet salonu"
             className="w-full h-full object-cover opacity-20"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-white/70"></div>
@@ -440,10 +507,10 @@ export default function Home() {
         <div className="container mx-auto px-4 relative ">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-text mb-4 text-shadow">
-              Hayalinizdeki Düğünü Gerçekleştirmek İçin Hemen Başlayın
+              Hayalinizdeki Daveti Gerçekleştirmek İçin Hemen Başlayın
             </h2>
             <p className="text-darkgray mb-8">
-              davetnerede.com ile düğün planlamanızı kolaylaştırın.
+              davetnerede.com ile davet salonu planlamanızı kolaylaştırın.
             </p>
             <Link href="/dugun-mekanlari">
               <Button size="lg" variant="primary" className="shadow-lg hover:shadow-xl transition-shadow">Mekanları Keşfedin</Button>

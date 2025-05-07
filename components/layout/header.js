@@ -53,13 +53,13 @@ export function Header() {
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 18H10V15C10 14.448 9.552 14 9 14H5C4.448 14 4 14.448 4 15V18H2V9.65L7 4.4L12 9.6V18ZM17 18H15V13C15 10.424 12.649 8 10 8H9.83L12 5.93L22 15.3V18H20V15C20 14.448 19.552 14 19 14H17C16.448 14 16 14.448 16 15V18H17Z" fill="currentColor" />
                             </svg>
-                            Düğün Mekanları
+                            Davet Salonları
                         </Link>
                         <Link href="/dugun-firmalari" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M19 6H16V5C16 3.34 14.66 2 13 2H11C9.34 2 8 3.34 8 5V6H5C3.9 6 3 6.9 3 8V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V8C21 6.9 20.1 6 19 6ZM10 5C10 4.45 10.45 4 11 4H13C13.55 4 14 4.45 14 5V6H10V5ZM19 20H5V8H19V20Z" fill="currentColor" />
                             </svg>
-                            Düğün Firmaları
+                            Davet Salon Firmaları
                         </Link>
                         <Link href="/rehber-yazilar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,12 +73,6 @@ export function Header() {
                             </svg>
                             İndirimler
                         </Link>
-                        <Link href="/gelinlik-modelleri" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
-                            <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12.07 6.01C8.2 6.01 5.07 9.14 5.07 13.01C5.07 16.88 8.2 20.01 12.07 20.01C15.94 20.01 19.07 16.88 19.07 13.01C19.07 9.14 15.94 6.01 12.07 6.01ZM12.07 18.01C9.3 18.01 7.07 15.78 7.07 13.01C7.07 10.24 9.3 8.01 12.07 8.01C14.84 8.01 17.07 10.24 17.07 13.01C17.07 15.78 14.84 18.01 12.07 18.01ZM12.07 4.01C14.06 4.01 15.97 4.8 17.4 6.22C17.78 6.6 18.41 6.59 18.79 6.2C19.17 5.82 19.16 5.19 18.77 4.81C17.01 3.06 14.63 2.01 12.07 2.01C9.5 2.01 7.12 3.06 5.36 4.81C4.98 5.19 4.97 5.82 5.35 6.2C5.73 6.58 6.36 6.59 6.74 6.22C8.17 4.8 10.07 4.01 12.07 4.01Z" fill="currentColor" />
-                            </svg>
-                            Gelinlik Modelleri
-                        </Link>
                         <Link href="/araclar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M22.7 19L13.6 9.9C14.5 7.6 14 4.9 12.1 3C10.1 1 7.1 0.6 4.7 1.7L9 6L6 9L1.6 4.7C0.4 7.1 0.9 10.1 2.9 12.1C4.8 14 7.5 14.5 9.8 13.6L18.9 22.7C19.3 23.1 19.9 23.1 20.3 22.7L22.6 20.4C23.1 20 23.1 19.3 22.7 19Z" fill="currentColor" />
@@ -89,7 +83,7 @@ export function Header() {
                             <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor" />
                             </svg>
-                            Ücretsiz Düğün Asistanı
+                            Ücretsiz Davet Asistanı
                         </Link>
                     </nav>
                 </div>
