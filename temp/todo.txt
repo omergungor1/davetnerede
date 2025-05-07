@@ -1,0 +1,141 @@
+# davetnerede.com Platformu Yapım Todo Listesi
+
+Davet burada isimli bir platform yapacağız. Bu platformun amacı kullanıcı adres araması yapacak ve ara diyecek, dave salonları listelenecek. Kullanıcı istediği davet salonların profiline girebilir. Profilde davet salonu hakkında tüm bilgi yer almalı. 
+
+Davet salonundan teklif alma butonu olmalı. Teklif al butonuna tıklayınca kullanıcıya bir modal açmalıyız ve kullanıcı hakkında temel ve gerekli bilgileri toplamalıyız. 
+
+Liste sayfasında filtre butonu olmalı. Firma listesinden Teklif Al ile teklif isteyebilir. Salonda detayları kısmında işletmenin detaylı iletişim ve adres bilgisi yer almalı. 
+
+Proje teknik detayları:
+
+### **Temel Teknoloji Yığını**
+
+1. **Next.js**: Modern React framework
+- Server-side rendering, statik site oluşturma
+- App Router ve sayfa yönlendirme
+- API Routes ile backend entegrasyonu
+1. **React**: UI bileşenlerini oluşturmak için
+- Functional bileşenler
+- React Hooks (useState, useEffect, useContext)
+- Client-side rendering
+1. **TailwindCSS**: Hızlı ve kolay stil oluşturma
+- Utility-first yaklaşım
+- Responsive tasarım
+- Kolay özelleştirme
+
+### **UI Bileşen Kütüphaneleri**
+
+1. **Shadcn UI**: Hazır, özelleştirilebilir bileşenler
+- Doğrudan projeye kopyalanabilen bileşenler
+- Radix UI temelli ancak styled components
+- Dialog, Button, Card, Input gibi temel bileşenler
+1. **Radix UI**: Primitives
+- Dialog, Popover, Select, Checkbox vb.
+- Erişilebilirlik odaklı
+- Styled-agnostic
+1. **Lucide React**: Modern, minimal ikon kütüphanesi
+- 1000+ ikon
+- Kolay entegrasyon
+- SVG temelli
+
+### **Veri ve State Yönetimi**
+
+1. **Supabase**: Firebase alternatifi
+- PostgreSQL veritabanı
+- Authentication
+- Storage çözümü
+- Real-time subscriptions
+1. **Redux Toolkit**: Global state yönetimi
+- createSlice API
+- Redux Thunk entegrasyonu
+- Basitleştirilmiş Redux deneyimi
+
+### **Styling Yardımcıları**
+
+1. **clsx/tailwind-merge**: Class'ları birleştirme
+- Koşullu sınıf isimleri
+- Tailwind sınıflarını birleştirme
+1. **class-variance-authority**: Bileşen varyantları
+- Farklı bileşen durumları için stilleme
+- Tailwind ile uyumlu
+
+Supabase ve veritabanı bağlantılarını daha sonra yapacağız. İlk önce statik olarak sabit datalar ile tasarımı iyileştirelim.
+
+Renk paleti:
+
+#DB0962,#FFFFFF,#1A1A1A,#F5F5F5
+
+
+## 1. Proje Kurulumu
+- [ ] Proje klasör yapısını oluştur - Nextjs, tailwindcss
+- [ ] Gerekli paketleri ve bağımlılıkları yükle (React veya tercih edilen framework)
+- [ ] Temel stil dosyalarını oluştur (SCSS/CSS)
+- [ ] Renk paleti ve tasarım değişkenlerini tanımla (#DB0962,#FFFFFF,#1A1A1A,#F5F5F5)
+- [ ] Responsive tasarım için media query breakpoint'leri belirle
+
+## 2. Genel Bileşenler ve Layout
+- [ ] Header bileşeni (logo, arama, menü, giriş/üye ol)
+- [ ] Footer bileşeni (linkler, sosyal medya, dil seçimi, uygulama indirme)
+- [ ] Navigasyon menüsü (Düğün Mekanları, Düğün Firmaları, Rehber Yazılar vs.)
+- [ ] Breadcrumb bileşeni
+- [ ] Kart bileşeni (mekan listesi için)
+- [ ] Buton bileşenleri (özellikle "Teklif Al" ve "İncele" butonları)
+- [ ] Pagination bileşeni
+- [ ] Favori ekleme/çıkarma butonu
+- [ ] Bildirim/Toast bileşeni
+
+## 3. Ana Sayfa
+- [ ] Hero alanı ve arama formu oluştur
+- [ ] Dropdown bileşenleri (mekan türü, konum seçimi)
+- [ ] "Firmalar Listele" butonu ve işlevselliği
+- [ ] Kampanyalar slider/carousel'i
+- [ ] Gerçek düğün hikayeleri grid oluştur
+- [ ] Popüler mekan kategorileri
+- [ ] Galerileri listele (düğün fotoğrafları ve modeller için)
+
+## 4. Listeleme Sayfası
+- [ ] Filtreleme sidebar'ı oluştur
+  - [ ] Konum filtresi
+  - [ ] Bölge/İlçe filtresi
+  - [ ] Fiyat aralığı filtresi
+  - [ ] Misafir sayısı filtresi
+  - [ ] Özellik filtreleri
+- [ ] Sonuç sayısı ve sıralama seçenekleri
+- [ ] Mekan kartlarını oluştur (fotoğraf, isim, rating, özellikler, fiyat)
+- [ ] Fiyat karşılaştırma tablosunu oluştur
+
+## 5. Detay Sayfası
+- [ ] Foto galeri slider'ı oluştur
+- [ ] Mekan başlığı, puanı ve temel bilgileri
+- [ ] İletişim bilgileri alanı
+- [ ] Rezervasyon/teklif alma formu
+  - [ ] Tarih seçimi
+  - [ ] Kişi sayısı girişi
+  - [ ] İletişim bilgileri girişi
+- [ ] Özellikler/hizmetler listesi
+- [ ] Yorum ve değerlendirme bölümü
+- [ ] Benzer mekanlar önerisi
+- [ ] Fiyat paketleri tablosu
+
+## 6. Fonksiyonellik
+- [ ] Sadece statik data, daha sonra dinamik yapılacak
+
+## 7. Responsive Düzenlemeler
+- [ ] Mobil görünüm için header düzenle
+- [ ] Mobil menü oluştur
+- [ ] Tablet için grid yapısını düzenle
+- [ ] Mobil filtreleme oluştur (açılır/kapanır)
+- [ ] Detay sayfası mobil görünüm ayarları
+
+## 8. API Entegrasyonu
+- [ ] Statik data kullan jhenüz apiye gerek yok
+
+## 9. Performans ve SEO
+- [ ] Lazy loading ekle (görseller için)
+- [ ] Code splitting uygula
+- [ ] Meta tag'leri optimize et
+- [ ] URL yapısını düzenle
+- [ ] Sayfa yüklenme hızını optimize et
+
+## 10. Test ve Dağıtım
+- [ ] Hiçbir test Yazma! Test yazmaya ihtiyacımız yok!
