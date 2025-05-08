@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Modal } from './ui/modal';
 import { RequestQuoteForm } from './request-quote-form';
+import { ImageGallery } from './ui/image-gallery';
 
 export function VenueCard({ venue }) {
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
     const [quoteSubmitted, setQuoteSubmitted] = useState(false);
-    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
-    const touchStartX = useRef(0);
-    const touchEndX = useRef(0);
 
     // Mobil görünümü kontrol et
     useEffect(() => {
@@ -48,108 +46,16 @@ export function VenueCard({ venue }) {
         }, 2000);
     };
 
-    const nextImage = () => {
-        setActiveImageIndex((prev) => (prev + 1) % images.length);
-    };
-
-    const prevImage = () => {
-        setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    };
-
-    const handleDotClick = (index) => {
-        setActiveImageIndex(index);
-    };
-
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = (e) => {
-        touchEndX.current = e.changedTouches[0].clientX;
-        handleSwipe();
-    };
-
-    const handleSwipe = () => {
-        if (touchStartX.current - touchEndX.current > 50) {
-            // Sol kaydırma - ileri git
-            nextImage();
-        } else if (touchEndX.current - touchStartX.current > 50) {
-            // Sağ kaydırma - geri git
-            prevImage();
-        }
-    };
-
     return (
         <>
             <div className="border border-border rounded-lg overflow-hidden bg-white mb-6 h-full">
                 <div className="relative">
-                    {/* Masaüstü görünümü - tek resim */}
-                    <div className={`${isMobile ? 'hidden' : 'block'}`}>
-                        <Link href={`/dugun-mekanlari/${venue.id}`}>
-                            <img
-                                src={images[0]}
-                                alt={venue.name}
-                                className="w-full h-52 object-cover"
-                            />
-                        </Link>
-                    </div>
-
-                    {/* Mobil görünüm - kaydırılabilir galeri */}
-                    {isMobile && (
-                        <div
-                            className="relative overflow-hidden"
-                            onTouchStart={handleTouchStart}
-                            onTouchEnd={handleTouchEnd}
-                        >
-                            <div
-                                className="flex transition-transform duration-300 ease-in-out"
-                                style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
-                            >
-                                {images.map((image, index) => (
-                                    <Link
-                                        key={index}
-                                        href={`/dugun-mekanlari/${venue.id}`}
-                                        className="flex-shrink-0 w-full"
-                                    >
-                                        <img
-                                            src={image}
-                                            alt={`${venue.name} - ${index + 1}`}
-                                            className="w-full h-52 object-cover"
-                                        />
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Kaydırma butonları */}
-                            {images.length > 1 && (
-                                <>
-                                    <button
-                                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md text-primary"
-                                        onClick={(e) => { e.preventDefault(); prevImage(); }}
-                                    >
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md text-primary"
-                                        onClick={(e) => { e.preventDefault(); nextImage(); }}
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </button>
-
-                                    {/* Gösterge noktaları */}
-                                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                                        {images.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                className={`w-2 h-2 rounded-full transition-colors ${index === activeImageIndex ? 'bg-primary' : 'bg-white/70'}`}
-                                                onClick={(e) => { e.preventDefault(); handleDotClick(index); }}
-                                            />
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
+                    <ImageGallery
+                        images={images}
+                        alt={venue.name}
+                        height="h-52"
+                        link={`/dugun-mekanlari/${venue.id}`}
+                    />
 
                     {venue.discount && (
                         <div className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">

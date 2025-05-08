@@ -12,12 +12,30 @@
   --background: #FFFFFF;
 }
 
+html,
 body {
   color: var(--text);
   background-color: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+  overscroll-behavior-x: none;
+  /* Yatay taşmayı engeller */
+  touch-action: pan-y;
+  /* Sadece dikey kaydırmaya izin verir */
 }
 
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile için özel kaydırma davranışı */
+@media (max-width: 767px) {
+
+  html,
+  body {
+    overscroll-behavior: contain;
+    scroll-snap-type: y proximity;
+  }
 }

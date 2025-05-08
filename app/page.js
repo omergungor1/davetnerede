@@ -8,13 +8,20 @@ import { VenueCard } from '../components/venue-card';
 import { Search, MapPin, ChevronRight } from 'lucide-react';
 import { Modal } from '../components/ui/modal';
 import { RequestQuoteForm } from '../components/request-quote-form';
+import Image from 'next/image';
+import { ImageGallery } from '../components/ui/image-gallery';
 
 // Örnek veri
 const featuredVenues = [
   {
     id: 1,
     title: 'Mövenpick Hotel İstanbul Asia Airport',
-    image: '/images/salon-1.webp',
+    images: [
+      '/images/salon-12.webp',
+      '/images/salon-8.webp',
+      '/images/salon-13.jpg',
+      '/images/salon-4.webp'
+    ],
     location: 'Pendik, İstanbul',
     price: '1.350 TL',
     discount: '%25',
@@ -23,7 +30,12 @@ const featuredVenues = [
   {
     id: 2,
     title: 'Casamento',
-    image: '/images/salon-6.webp',
+    images: [
+      '/images/salon-9.jpg',
+      '/images/salon-12.webp',
+      '/images/salon-13.jpg',
+      '/images/salon-4.webp'
+    ],
     location: 'Sarıyer, İstanbul',
     price: '3.500 TL',
     discount: 'Hediye',
@@ -32,7 +44,11 @@ const featuredVenues = [
   {
     id: 3,
     title: 'Plus Hotel',
-    image: '/images/salon-12.webp',
+    images: [
+      '/images/salon-16.jpeg',
+      '/images/salon-13.jpg',
+      '/images/salon-4.webp'
+    ],
     location: 'Şişli, İstanbul',
     price: '65.000 TL',
     discount: '%22',
@@ -86,28 +102,29 @@ const galleries = [
   },
 ];
 
+
 const categories = [
   {
     id: 1,
-    title: 'Davet Salonları',
+    title: 'Söz & Nişan Mekanları',
     image: '/images/salon-12.jpg',
     url: '/dugun-mekanlari',
   },
   {
     id: 2,
-    title: 'Davet Salon Fotoğrafçıları',
+    title: 'Kız İsteme & Aile Tanışma',
     image: '/images/salon-14.jpg',
     url: '/dugun-fotografcilari',
   },
   {
     id: 3,
-    title: 'Davet Salon Modelleri',
+    title: 'Doğum Günü & Parti Alanları',
     image: '/images/salon-15.jpg',
     url: '/davet-salon-modelleri',
   },
   {
     id: 4,
-    title: 'Davet Salon Organizasyonları',
+    title: 'Özel Davet & Kutlama Mekanları',
     image: '/images/salon-16.jpg',
     url: '/davet-salon-organizasyonlari',
   },
@@ -137,7 +154,7 @@ const testimonials = [
   },
 ];
 
-function FeaturedVenueCard({ title, image, location, price, discount, rating }) {
+function FeaturedVenueCard({ title, images, location, price, discount, rating }) {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
 
@@ -159,43 +176,43 @@ function FeaturedVenueCard({ title, image, location, price, discount, rating }) 
 
   return (
     <>
-      <Link href={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`} className="group">
-        <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+      <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+        <div className="relative">
+          <ImageGallery
+            images={images}
+            alt={title}
+            height="h-52"
+            objectFit="object-cover"
+            link={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`}
+          />
 
-            {discount && (
-              <div className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
-                {discount}
-              </div>
-            )}
-
-            <div className="absolute bottom-3 right-3 bg-white text-primary text-xs font-semibold px-2 py-1 rounded-full flex items-center">
-              <span className="mr-1">{rating}</span>
-              ★
+          {discount && (
+            <div className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded z-10">
+              {discount}
             </div>
+          )}
 
-            <button
-              onClick={openQuoteModal}
-              className="absolute bottom-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md hover:bg-primary/90"
-            >
-              Teklif Al
-            </button>
+          <div className="absolute bottom-3 right-3 bg-white text-primary text-xs font-semibold px-2 py-1 rounded-full flex items-center z-10">
+            <span className="mr-1">{rating}</span>
+            ★
           </div>
 
-          <div className="p-4">
-            <h3 className="font-medium text-text group-hover:text-primary truncate">{title}</h3>
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-darkgray text-sm">{location}</p>
-              <p className="text-text font-semibold">{price}</p>
-            </div>
-          </div>
+          <button
+            onClick={openQuoteModal}
+            className="absolute bottom-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md hover:bg-primary/90 z-10"
+          >
+            Teklif Al
+          </button>
         </div>
-      </Link>
+
+        <Link href={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`} className="block p-4 group">
+          <h3 className="font-medium text-text group-hover:text-primary truncate">{title}</h3>
+          <div className="flex justify-between items-center mt-2">
+            <p className="text-darkgray text-sm">{location}</p>
+            <p className="text-text font-semibold">{price}</p>
+          </div>
+        </Link>
+      </div>
 
       <Modal
         isOpen={isQuoteModalOpen}
@@ -346,7 +363,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-text mb-4">Popüler Kategoriler</h2>
             <p className="text-darkgray max-w-2xl mx-auto">
-              Davetiniz için ihtiyacınız olan tüm hizmetleri bulun.
+              Davetiniz ne olursa olsun, size en uygun mekanı burada bulabilirsiniz.
             </p>
           </div>
 
