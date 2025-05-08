@@ -144,7 +144,7 @@ export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "
             {/* Kaydırma butonları ve göstergeler - sadece mobilde ve birden fazla resim varsa */}
             {isMobile && imageArray.length > 1 && (
                 <>
-                    <button
+                    {/* <button
                         className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md text-primary hover:bg-white/90"
                         onClick={prevImage}
                         aria-label="Önceki resim"
@@ -157,7 +157,7 @@ export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "
                         aria-label="Sonraki resim"
                     >
                         <ChevronRight className="h-5 w-5" />
-                    </button>
+                    </button> */}
 
                     {/* Gösterge noktaları */}
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
