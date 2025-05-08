@@ -9,12 +9,11 @@ const venues = [
     {
         id: 1,
         name: 'Mövenpick Hotel İstanbul Asia Airport',
-        image: '/images/salon-1.webp',
+        image: '/images/mekan-1.webp',
         images: [
-            '/images/salon-1.webp',
-            '/images/salon-8.webp',
-            '/images/salon-13.jpg',
-            '/images/salon-4.webp'
+            '/images/salon-6.webp',
+            '/images/mekan-2.webp',
+            '/images/mekan-3.jpeg',
         ],
         rating: '5.0',
         reviewCount: '(45)',

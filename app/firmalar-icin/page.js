@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '../../components/ui/button';
 import Link from 'next/link';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function FirmalarIcin() {
     const [formData, setFormData] = useState({
@@ -14,6 +15,13 @@ export default function FirmalarIcin() {
         sehir: '',
         mesaj: '',
     });
+    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const formRef = useRef(null);
+
+    // SSS için akordiyon indeksi
+    const [activeAccordion, setActiveAccordion] = useState(null);
+    const faqRefs = useRef([]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -25,36 +33,128 @@ export default function FirmalarIcin() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log(formData);
         // Form gönderme işlemleri burada yapılacak
-        alert('Talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.');
+        setFormSubmitted(true);
+
+        // Form gönderildikten sonra belirli bir süre sonra mesajı kaldır ve formu sıfırla
+        setTimeout(() => {
+            setFormSubmitted(false);
+            setFormData({
+                isim: '',
+                telefon: '',
+                firma: '',
+                sehir: '',
+                email: '',
+                mesaj: ''
+            });
+            setIsFormOpen(false); // Formu kapat
+        }, 3000);
     };
+
+    const toggleForm = () => {
+        setIsFormOpen(prev => !prev);
+
+        // Form açıldığında, bir sonraki render'da scroll et
+        if (!isFormOpen) {
+            setTimeout(() => {
+                scrollToForm();
+            }, 300);
+        }
+    };
+
+    const scrollToForm = () => {
+        if (formRef.current) {
+            const yOffset = -100; // Üst kenardan ne kadar uzaklıkta duracağını ayarla
+            const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+            window.scrollTo({
+                top: y,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Akordiyon toggle işlevi
+    const toggleAccordion = (index) => {
+        // Eğer zaten açıksa kapat, değilse yeni indeksi aç
+        const newIndex = activeAccordion === index ? null : index;
+        setActiveAccordion(newIndex);
+
+        // Eğer yeni bir akordiyon açıldıysa, ona scroll yap
+        if (newIndex !== null) {
+            setTimeout(() => {
+                scrollToFaq(newIndex);
+            }, 100);
+        }
+    };
+
+    const scrollToFaq = (index) => {
+        if (faqRefs.current[index]) {
+            const yOffset = -120; // Üst kenardan ne kadar uzaklıkta duracağını ayarla
+            const y = faqRefs.current[index].getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+            window.scrollTo({
+                top: y,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // URL'de #iletisim-formu varsa, sayfayı yükledikten sonra otomatik olarak aç
+    useEffect(() => {
+        if (window.location.hash === '#iletisim-formu') {
+            setIsFormOpen(true);
+            setTimeout(scrollToForm, 500);
+        }
+    }, []);
+
+    // SSS içeriği
+    const faqItems = [
+        {
+            question: "Üyelik ücretli mi?",
+            answer: "Davet Nerede'de temel üyelik tamamen ücretsizdir. Dilerseniz ekstra görünürlük için premium paketlerimizden faydalanabilirsiniz."
+        },
+        {
+            question: "Profilimi nasıl oluşturacağım?",
+            answer: "Kaydınız tamamlandıktan sonra, danışmanlarımız sizinle iletişime geçerek tüm süreçte yanınızda olacak ve profil oluşturmada yardımcı olacaklar."
+        },
+        {
+            question: "Müşterilerle nasıl iletişim kuracağım?",
+            answer: "Platformumuz üzerinden çiftler sizinle doğrudan iletişime geçebilir. Ayrıca, çiftlerin talepleri doğrultusunda telefon ve e-posta bilgileriniz de paylaşılabilir."
+        },
+        {
+            question: "Hangi tür işletmeler üye olabilir?",
+            answer: "Düğün ve organizasyon sektöründe hizmet veren tüm işletmeler (mekanlar, fotoğrafçılar, organizatörler, gelinlik mağazaları vb.) platformumuza üye olabilir."
+        }
+    ];
 
     return (
         <main className="bg-white">
             {/* Hero Bölümü */}
-            <section className="bg-gradient-to-r from-[#f8f9fa] to-[#f1f3f5] py-16 md:py-24">
+            <section className="bg-gradient-to-r from-[#f8f9fa] to-[#f1f3f5] py-12 md:py-24">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row items-center">
-                        <div className="md:w-1/2 mb-10 md:mb-0">
-                            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text mb-6">
-                                İşletmenizi <span className="text-primary">Türkiye'nin En Büyük</span> Düğün Platformunda Büyütün
+                        <div className="w-full md:w-1/2 mb-8 md:mb-0">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text mb-4 md:mb-6 text-center md:text-left">
+                                İşletmenizi <span className="text-primary">Türkiye'nin En Büyük</span> Davet Platformunda Büyütün
                             </h1>
-                            <p className="text-lg md:text-xl text-darkgray mb-8">
-                                Yüzlerce çiftin hayallerindeki düğün için aradığı salon ve hizmetleri sağlayan işletmeler arasında yerinizi alın.
+                            <p className="text-base sm:text-lg md:text-xl text-darkgray mb-6 md:mb-8 text-center md:text-left">
+                                Yüzlerce çiftin hayallerindeki söz,nişan için aradığı salon ve hizmetleri sağlayan işletmeler arasında yerinizi alın.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button href="#iletisim-formu" size="lg">
+                            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start">
+                                <Button href="#iletisim-formu" size="lg" className="text-sm md:text-base w-full sm:w-auto">
                                     Hemen Ücretsiz Üye Olun
                                 </Button>
-                                <Button href="#avantajlar" variant="outline" size="lg">
+                                <Button href="#avantajlar" variant="outline" size="lg" className="text-sm md:text-base w-full sm:w-auto mt-3 sm:mt-0">
                                     Avantajlarımızı Görün
                                 </Button>
                             </div>
                         </div>
-                        <div className="md:w-1/2">
-                            <div className="relative rounded-lg overflow-hidden shadow-xl">
+                        <div className="w-full md:w-1/2 mt-6 md:mt-0">
+                            <div className="relative rounded-lg overflow-hidden shadow-xl mx-auto max-w-sm md:max-w-full">
                                 <Image
-                                    src="/images/salon-15.jpg"
+                                    src="/images/mekan-1.webp"
                                     alt="İşletmenizi Büyütün"
                                     width={600}
                                     height={400}
@@ -208,26 +308,28 @@ export default function FirmalarIcin() {
             </section>
 
             {/* Yüzlerce İş Fırsatı */}
-            <section className="py-16 bg-gradient-to-r from-[#111827] to-[#1f2937] text-white">
+            <section className="py-12 md:py-16 bg-gradient-to-r from-[#111827] to-[#1f2937] text-white">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row items-center">
-                        <div className="md:w-1/2 mb-8 md:mb-0">
-                            <h2 className="text-2xl md:text-3xl font-bold mb-4">Yüzlerce İş Fırsatını Kaçırmayın!</h2>
-                            <p className="text-lg text-gray-300 mb-6">
+                        <div className="w-full md:w-1/2 mb-8 md:mb-0">
+                            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-center md:text-left">Yüzlerce İş Fırsatını Kaçırmayın!</h2>
+                            <p className="text-base md:text-lg text-gray-300 mb-6 text-center md:text-left">
                                 Osmaniye, Ordu, Rize, Sakarya, Samsun, Siirt, Sinop, Sivas, Tekirdağ, Tokat, Trabzon, Tunceli, Şanlıurfa, Uşak, Van, Yozgat, Zonguldak, Aksaray, Bayburt, Karaman, Kırıkkale, Batman, Şırnak, Bartın ve Türkiye'nin tüm illerinden çiftler sizinle çalışmak için bekliyor.
                             </p>
-                            <Button href="#iletisim-formu" variant="outline" size="lg" className="border-primary text-primary hover:bg-white hover:text-gray-900">
-                                Hemen Katılın
-                            </Button>
+                            <div className="flex justify-center md:justify-start">
+                                <Button href="#iletisim-formu" variant="outline" size="lg" className="border-primary text-primary hover:bg-white hover:text-gray-900 text-sm md:text-base">
+                                    Hemen Katılın
+                                </Button>
+                            </div>
                         </div>
-                        <div className="md:w-1/2 flex justify-center">
-                            <div className="relative rounded-lg overflow-hidden shadow-lg">
+                        <div className="w-full md:w-1/2 flex justify-center mt-6 md:mt-0">
+                            <div className="relative rounded-lg overflow-hidden shadow-lg max-w-sm md:max-w-full">
                                 <Image
                                     src="/images/salon-8.webp"
                                     alt="İş Fırsatları"
                                     width={500}
                                     height={300}
-                                    className="object-cover"
+                                    className="object-cover w-full h-full"
                                 />
                             </div>
                         </div>
@@ -238,106 +340,140 @@ export default function FirmalarIcin() {
             {/* İletişim Formu */}
             <section id="iletisim-formu" className="py-16 bg-white">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-3xl mx-auto">
-                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Sizi Arayalım</h2>
-                        <p className="text-darkgray text-center mb-8">Bilgilerinizi bırakın, danışmanlarımız en kısa sürede sizinle iletişime geçsin.</p>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="isim" className="block text-sm font-medium text-text mb-1">İsim Soyisim</label>
-                                    <input
-                                        type="text"
-                                        id="isim"
-                                        name="isim"
-                                        value={formData.isim}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
-                                    <input
-                                        type="tel"
-                                        id="telefon"
-                                        name="telefon"
-                                        value={formData.telefon}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
-                                </div>
+                    <div ref={formRef} className="max-w-3xl mx-auto border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all">
+                        <button
+                            onClick={toggleForm}
+                            className="w-full px-6 py-5 bg-white hover:bg-primary/5 flex justify-between items-center transition-colors focus:outline-none"
+                            aria-expanded={isFormOpen}
+                            aria-controls="contact-form-panel"
+                        >
+                            <div className="flex flex-col w-full">
+                                <h2 className="text-xl md:text-2xl font-bold text-text">Sizi Arayalım</h2>
+                                <p className="text-darkgray text-sm mt-1">Bilgilerinizi bırakın, danışmanlarımız sizinle iletişime geçsin</p>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="firma" className="block text-sm font-medium text-text mb-1">Firma Adı</label>
-                                    <input
-                                        type="text"
-                                        id="firma"
-                                        name="firma"
-                                        value={formData.firma}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">Şehir</label>
-                                    <select
-                                        id="sehir"
-                                        name="sehir"
-                                        value={formData.sehir}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    >
-                                        <option value="">Seçiniz</option>
-                                        <option value="Adana">Adana</option>
-                                        <option value="Adıyaman">Adıyaman</option>
-                                        <option value="Afyon">Afyon</option>
-                                        <option value="Ankara">Ankara</option>
-                                        <option value="Antalya">Antalya</option>
-                                        <option value="Bursa">Bursa</option>
-                                        <option value="İstanbul">İstanbul</option>
-                                        <option value="İzmir">İzmir</option>
-                                        {/* Diğer şehirler buraya eklenebilir */}
-                                    </select>
-                                </div>
+                            <div className={`text-primary transition-transform duration-300 ${isFormOpen ? 'rotate-180' : ''}`}>
+                                <ChevronDown size={24} />
                             </div>
+                        </button>
 
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta Adresi</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                />
-                            </div>
+                        <div
+                            id="contact-form-panel"
+                            className={`transition-all duration-500 ease-in-out overflow-hidden ${isFormOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                                }`}
+                        >
+                            <div className="p-4 sm:p-6 border-t border-border bg-white/50">
+                                {formSubmitted ? (
+                                    <div className="py-8 text-center">
+                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Talebiniz Alındı!</h3>
+                                        <p className="text-sm text-gray-500">
+                                            Ekibimiz en kısa sürede sizinle iletişime geçecektir.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleSubmit} className="space-y-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="isim" className="block text-sm font-medium text-text mb-1">İsim Soyisim</label>
+                                                <input
+                                                    type="text"
+                                                    id="isim"
+                                                    name="isim"
+                                                    value={formData.isim}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
+                                                <input
+                                                    type="tel"
+                                                    id="telefon"
+                                                    name="telefon"
+                                                    value={formData.telefon}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                />
+                                            </div>
+                                        </div>
 
-                            <div>
-                                <label htmlFor="mesaj" className="block text-sm font-medium text-text mb-1">Mesajınız (İsteğe Bağlı)</label>
-                                <textarea
-                                    id="mesaj"
-                                    name="mesaj"
-                                    value={formData.mesaj}
-                                    onChange={handleChange}
-                                    rows="4"
-                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                ></textarea>
-                            </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="firma" className="block text-sm font-medium text-text mb-1">Firma Adı</label>
+                                                <input
+                                                    type="text"
+                                                    id="firma"
+                                                    name="firma"
+                                                    value={formData.firma}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">Şehir</label>
+                                                <select
+                                                    id="sehir"
+                                                    name="sehir"
+                                                    value={formData.sehir}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                >
+                                                    <option value="">Seçiniz</option>
+                                                    <option value="Adana">Adana</option>
+                                                    <option value="Adıyaman">Adıyaman</option>
+                                                    <option value="Afyon">Afyon</option>
+                                                    <option value="Ankara">Ankara</option>
+                                                    <option value="Antalya">Antalya</option>
+                                                    <option value="Bursa">Bursa</option>
+                                                    <option value="İstanbul">İstanbul</option>
+                                                    <option value="İzmir">İzmir</option>
+                                                    {/* Diğer şehirler buraya eklenebilir */}
+                                                </select>
+                                            </div>
+                                        </div>
 
-                            <div className="pt-2">
-                                <Button type="submit" size="lg" className="w-full">
-                                    Kaydınızı Tamamlayın
-                                </Button>
+                                        <div>
+                                            <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta Adresi</label>
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="mesaj" className="block text-sm font-medium text-text mb-1">Mesajınız (İsteğe Bağlı)</label>
+                                            <textarea
+                                                id="mesaj"
+                                                name="mesaj"
+                                                value={formData.mesaj}
+                                                onChange={handleChange}
+                                                rows="4"
+                                                className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            ></textarea>
+                                        </div>
+
+                                        <div className="pt-2">
+                                            <Button type="submit" size="lg" className="w-full">
+                                                Kaydınızı Tamamlayın
+                                            </Button>
+                                        </div>
+                                    </form>
+                                )}
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -347,40 +483,52 @@ export default function FirmalarIcin() {
                 <div className="container mx-auto px-4">
                     <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Sıkça Sorulan Sorular</h2>
 
-                    <div className="max-w-3xl mx-auto space-y-6">
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
-                            <h3 className="text-xl font-semibold mb-2">Üyelik ücretli mi?</h3>
-                            <p className="text-darkgray">Davet Nerede'de temel üyelik tamamen ücretsizdir. Dilerseniz ekstra görünürlük için premium paketlerimizden faydalanabilirsiniz.</p>
-                        </div>
+                    <div className="max-w-3xl mx-auto space-y-5">
+                        {faqItems.map((item, index) => (
+                            <div
+                                key={index}
+                                ref={(el) => (faqRefs.current[index] = el)}
+                                className="bg-white rounded-lg shadow-sm border border-border overflow-hidden transition-all hover:shadow-md"
+                            >
+                                <button
+                                    onClick={() => toggleAccordion(index)}
+                                    className="w-full px-6 py-5 text-left font-medium bg-white hover:bg-primary/5 flex justify-between items-center transition-colors focus:outline-none"
+                                    aria-expanded={activeAccordion === index}
+                                    aria-controls={`faq-content-${index}`}
+                                >
+                                    <h3 className="text-lg font-semibold text-text pr-4">{item.question}</h3>
+                                    <div className={`flex-shrink-0 text-primary transition-transform duration-300 ${activeAccordion === index ? 'rotate-180' : ''}`}>
+                                        <ChevronDown size={20} />
+                                    </div>
+                                </button>
 
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
-                            <h3 className="text-xl font-semibold mb-2">Profilimi nasıl oluşturacağım?</h3>
-                            <p className="text-darkgray">Kaydınız tamamlandıktan sonra, danışmanlarımız sizinle iletişime geçerek tüm süreçte yanınızda olacak ve profil oluşturmada yardımcı olacaklar.</p>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
-                            <h3 className="text-xl font-semibold mb-2">Müşterilerle nasıl iletişim kuracağım?</h3>
-                            <p className="text-darkgray">Platformumuz üzerinden çiftler sizinle doğrudan iletişime geçebilir. Ayrıca, çiftlerin talepleri doğrultusunda telefon ve e-posta bilgileriniz de paylaşılabilir.</p>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
-                            <h3 className="text-xl font-semibold mb-2">Hangi tür işletmeler üye olabilir?</h3>
-                            <p className="text-darkgray">Düğün ve organizasyon sektöründe hizmet veren tüm işletmeler (mekanlar, fotoğrafçılar, organizatörler, gelinlik mağazaları vb.) platformumuza üye olabilir.</p>
-                        </div>
+                                <div
+                                    id={`faq-content-${index}`}
+                                    className={`transition-all duration-300 ease-in-out overflow-hidden ${activeAccordion === index
+                                        ? 'max-h-96 opacity-100'
+                                        : 'max-h-0 opacity-0'
+                                        }`}
+                                >
+                                    <div className="px-6 pb-5 pt-1 text-darkgray border-t border-border/30">
+                                        {item.answer}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
             {/* Sorunuz mu var? */}
-            <section className="py-12 bg-white">
+            <section className="py-10 md:py-12 bg-white">
                 <div className="container mx-auto px-4">
-                    <div className="flex flex-col md:flex-row items-center justify-between bg-primary/5 rounded-lg p-6 md:p-8 border border-primary/20">
-                        <div className="mb-6 md:mb-0 md:mr-6">
-                            <h2 className="text-xl md:text-2xl font-semibold mb-2">Sorunuz mu var?</h2>
-                            <p className="text-darkgray">Merak ettiğiniz bir konu varsa hemen iletişime geçin, sizi arayalım.</p>
+                    <div className="flex flex-col sm:flex-row items-center justify-between bg-primary/5 rounded-lg p-5 md:p-8 border border-primary/20">
+                        <div className="mb-5 sm:mb-0 sm:mr-6 text-center sm:text-left">
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2">Sorunuz mu var?</h2>
+                            <p className="text-darkgray text-sm sm:text-base">Merak ettiğiniz bir konu varsa hemen iletişime geçin, sizi arayalım.</p>
                         </div>
-                        <Link href="tel:+902126444782" className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <Link href="tel:+902126444782" className="inline-flex items-center px-5 py-2 sm:px-6 sm:py-3 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors text-sm sm:text-base">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                             0212 644 47 82

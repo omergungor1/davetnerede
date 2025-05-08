@@ -107,25 +107,25 @@ const categories = [
   {
     id: 1,
     title: 'Söz & Nişan Mekanları',
-    image: '/images/salon-12.jpg',
+    image: '/images/kategori1.avif',
     url: '/dugun-mekanlari',
   },
   {
     id: 2,
     title: 'Kız İsteme & Aile Tanışma',
-    image: '/images/salon-14.jpg',
+    image: '/images/kategori2.webp',
     url: '/dugun-fotografcilari',
   },
   {
     id: 3,
     title: 'Doğum Günü & Parti Alanları',
-    image: '/images/salon-15.jpg',
+    image: '/images/kategori3.jpg',
     url: '/davet-salon-modelleri',
   },
   {
     id: 4,
     title: 'Özel Davet & Kutlama Mekanları',
-    image: '/images/salon-16.jpg',
+    image: '/images/kategori4.jpg',
     url: '/davet-salon-organizasyonlari',
   },
 ];
@@ -183,6 +183,8 @@ function FeaturedVenueCard({ title, images, location, price, discount, rating })
             alt={title}
             height="h-52"
             objectFit="object-cover"
+            showArrows={false}
+            allowFullScreen={false}
             link={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`}
           />
 
@@ -266,7 +268,7 @@ export default function Home() {
 
             {/* Arama formu */}
             <div className="max-w-2xl mx-auto bg-white p-4 rounded-lg mb-4">
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-darkgray">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

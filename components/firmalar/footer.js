@@ -11,10 +11,10 @@ export function FirmalarFooter() {
                     <div className="md:col-span-1">
                         <Link href="/" className="flex items-center">
                             <Image src="/images/logo.png" alt="Davet Nerede" width={40} height={40} />
-                            <span className="text-xl font-bold text-primary ml-2">Davet Nerede</span>
+                            <span className="text-xl font-bold text-primary ml-2">Davet Nerede?</span>
                         </Link>
                         <p className="text-darkgray mt-4">
-                            Düğün ve organizasyon sektöründe faaliyet gösteren firmaları, çiftlerle buluşturan Türkiye'nin en büyük dijital platformu.
+                            Söz, nişan, doğum günü ve tüm özel davetler için salonları kullanıcılarla buluşturan, Türkiye'nin en büyük dijital platformu.
                         </p>
                     </div>
 
@@ -53,12 +53,12 @@ export function FirmalarFooter() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/dugun-mekanlari" className="text-darkgray hover:text-primary transition-colors">
-                                    Düğün Mekanları
+                                <Link href="/davet-salonlari" className="text-darkgray hover:text-primary transition-colors">
+                                    Davet Salonları
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/giris-yap" className="text-darkgray hover:text-primary transition-colors">
+                                <Link href="/firma-giris" className="text-darkgray hover:text-primary transition-colors">
                                     Firma Girişi
                                 </Link>
                             </li>

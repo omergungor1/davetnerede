@@ -51,7 +51,7 @@ export function Header() {
                         {/* Logo */}
                         <Link href="/" className="flex-shrink-0 flex items-center">
                             <Image src="/images/logo.png" alt="davetnerede.com" width={40} height={40} />
-                            <span className="text-xl sm:text-2xl font-bold text-primary">Davet Nerede</span>
+                            <span className="text-xl sm:text-2xl font-bold text-primary">Davet Nerede?</span>
                         </Link>
 
                         {/* Mobil Arama Butonu */}
@@ -91,7 +91,10 @@ export function Header() {
                                 </button>
                             </div>
 
-                            <Link href="/firmalar-icin" className="ml-2 md:ml-4 hidden sm:inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 text-sm font-medium text-white bg-primary rounded hover:bg-primary/90">
+                            <Link
+                                href="/firmalar-icin"
+                                className="hidden md:block ml-2 md:ml-4 inline-flex items-center px-2 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium text-white bg-primary rounded hover:bg-primary/90"
+                            >
                                 Firmalar İçin
                             </Link>
                         </div>
@@ -115,14 +118,14 @@ export function Header() {
                 </div>
 
                 {/* Mobil Menü */}
-                <div className={`border-t border-border bg-white overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-96' : 'max-h-0'}`}>
+                <div className={`border-t border-border bg-white overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-112' : 'max-h-0'}`}>
                     <div className="container mx-auto px-4 py-2">
                         <nav className="flex flex-col">
-                            <Link href="/dugun-mekanlari" className="py-2 text-text hover:text-primary">
-                                Düğün Mekanları
+                            <Link href="/davet-salonlari" className="py-2 text-text hover:text-primary">
+                                Davet Salonları
                             </Link>
-                            <Link href="/dugun-firmalari" className="py-2 text-text hover:text-primary">
-                                Düğün Firmaları
+                            <Link href="/organizasyon-firmalari" className="py-2 text-text hover:text-primary">
+                                Organizasyon Firmaları
                             </Link>
                             <Link href="/rehber-yazilar" className="py-2 text-text hover:text-primary">
                                 Rehber Yazılar
@@ -130,14 +133,14 @@ export function Header() {
                             <Link href="/indirimler" className="py-2 text-text hover:text-primary">
                                 İndirimler
                             </Link>
-                            <Link href="/gelinlik-modelleri" className="py-2 text-text hover:text-primary">
-                                Gelinlik Modelleri
-                            </Link>
                             <Link href="/araclar" className="py-2 text-text hover:text-primary">
                                 Araçlar
                             </Link>
                             <Link href="/ucretsiz-dugun-asistani" className="py-2 text-text hover:text-primary">
                                 Ücretsiz Düğün Asistanı
+                            </Link>
+                            <Link href="/firmalar-icin" className="py-2 text-text hover:text-primary">
+                                Firmanızı Ekleyin
                             </Link>
                             <div className="pt-2 border-t border-border">
                                 <button onClick={openLoginModal} className="py-2 text-text hover:text-primary w-full text-left">
@@ -159,13 +162,13 @@ export function Header() {
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 18H10V15C10 14.448 9.552 14 9 14H5C4.448 14 4 14.448 4 15V18H2V9.65L7 4.4L12 9.6V18ZM17 18H15V13C15 10.424 12.649 8 10 8H9.83L12 5.93L22 15.3V18H20V15C20 14.448 19.552 14 19 14H17C16.448 14 16 14.448 16 15V18H17Z" fill="currentColor" />
                                 </svg>
-                                Düğün Mekanları
+                                Davet Salonları
                             </Link>
                             <Link href="/dugun-firmalari" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M19 6H16V5C16 3.34 14.66 2 13 2H11C9.34 2 8 3.34 8 5V6H5C3.9 6 3 6.9 3 8V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V8C21 6.9 20.1 6 19 6ZM10 5C10 4.45 10.45 4 11 4H13C13.55 4 14 4.45 14 5V6H10V5ZM19 20H5V8H19V20Z" fill="currentColor" />
                                 </svg>
-                                Düğün Firmaları
+                                Organizasyon Firmaları
                             </Link>
                             <Link href="/rehber-yazilar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -183,7 +186,13 @@ export function Header() {
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12.07 6.01C8.2 6.01 5.07 9.14 5.07 13.01C5.07 16.88 8.2 20.01 12.07 20.01C15.94 20.01 19.07 16.88 19.07 13.01C19.07 9.14 15.94 6.01 12.07 6.01ZM12.07 18.01C9.3 18.01 7.07 15.78 7.07 13.01C7.07 10.24 9.3 8.01 12.07 8.01C14.84 8.01 17.07 10.24 17.07 13.01C17.07 15.78 14.84 18.01 12.07 18.01ZM12.07 4.01C14.06 4.01 15.97 4.8 17.4 6.22C17.78 6.6 18.41 6.59 18.79 6.2C19.17 5.82 19.16 5.19 18.77 4.81C17.01 3.06 14.63 2.01 12.07 2.01C9.5 2.01 7.12 3.06 5.36 4.81C4.98 5.19 4.97 5.82 5.35 6.2C5.73 6.58 6.36 6.59 6.74 6.22C8.17 4.8 10.07 4.01 12.07 4.01Z" fill="currentColor" />
                                 </svg>
-                                Gelinlik Modelleri
+                                Nişanlık ve Abiye Modelleri
+                            </Link>
+                            <Link href="/damatlilik-ve-erkek-takim-elbiseleri" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2L2 22h20L12 2ZM12 17L18 9L12 7L6 9L12 17Z" fill="currentColor" />
+                                </svg>
+                                Takım Elbiseleri
                             </Link>
                             <Link href="/araclar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -195,7 +204,7 @@ export function Header() {
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor" />
                                 </svg>
-                                Ücretsiz Düğün Asistanı
+                                Ücretsiz Ai Davet Asistanı
                             </Link>
                         </nav>
                     </div>

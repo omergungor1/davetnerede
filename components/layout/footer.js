@@ -14,7 +14,7 @@ export function Footer() {
                             <span className="text-primary font-bold text-2xl">davetnerede</span>
                         </Link>
                         <p className="text-sm text-darkgray mb-4 max-w-md">
-                            Düğün ve davet mekanlarını kolayca bulabileceğiniz, fiyat teklifi alabileceğiniz platform.
+                            Söz, nişan, doğum günü ve tüm özel davetler için salonları kullanıcılarla buluşturan, Türkiye'nin en büyük dijital platformu.
                         </p>
                     </div>
 
@@ -42,10 +42,10 @@ export function Footer() {
                         <div>
                             <h3 className="font-semibold mb-3 text-sm text-text">Popüler Alanlar</h3>
                             <ul className="space-y-2">
-                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Düğün Mekanları</Link></li>
-                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Düğün Fotoğrafçıları</Link></li>
-                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Gelinlik Modelleri</Link></li>
-                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Düğün Organizasyon</Link></li>
+                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Davet Mekanları</Link></li>
+                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Davet Organizasyon</Link></li>
+                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Nişanlık ve Abiye Modelleri</Link></li>
+                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Takım Elbiseleri</Link></li>
                             </ul>
                         </div>
                     </div>
