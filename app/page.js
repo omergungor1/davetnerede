@@ -125,7 +125,7 @@ const categories = [
   {
     id: 4,
     title: 'Özel Davet & Kutlama Mekanları',
-    image: '/images/kategori4.jpg',
+    image: '/images/kategori4.JPG',
     url: '/davet-salon-organizasyonlari',
   },
 ];
