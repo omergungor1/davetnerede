@@ -113,7 +113,7 @@ export default function FirmalarIcin() {
     const faqItems = [
         {
             question: "Üyelik ücretli mi?",
-            answer: "Davet Nerede'de temel üyelik tamamen ücretsizdir. Dilerseniz ekstra görünürlük için premium paketlerimizden faydalanabilirsiniz."
+            answer: "Davet Evi Bul'da temel üyelik tamamen ücretsizdir. Dilerseniz ekstra görünürlük için premium paketlerimizden faydalanabilirsiniz."
         },
         {
             question: "Profilimi nasıl oluşturacağım?",
@@ -169,7 +169,7 @@ export default function FirmalarIcin() {
             {/* Avantajlar Bölümü */}
             <section id="avantajlar" className="py-16 bg-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Neden <span className="text-primary">Davet Nerede</span> Platformunda Olmalısınız?</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Neden <span className="text-primary">Davet Evi Bul</span> Platformunda Olmalısınız?</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div className="bg-secondary rounded-lg p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
@@ -251,7 +251,7 @@ export default function FirmalarIcin() {
                                     <p className="text-darkgray text-sm">Yıldız Davet Salonu</p>
                                 </div>
                             </div>
-                            <p className="text-darkgray">"Davet Nerede platformunda yer aldıktan sonra doluluğumuz %30 arttı. Özellikle hafta içi günlerde bile rezervasyon almaya başladık."</p>
+                            <p className="text-darkgray">"Davet Evi Bul platformunda yer aldıktan sonra doluluğumuz %30 arttı. Özellikle hafta içi günlerde bile rezervasyon almaya başladık."</p>
                         </div>
 
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-border">

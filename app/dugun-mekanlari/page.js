@@ -140,7 +140,7 @@ export default function DugunMekanlari() {
                                 <span className="text-xs mr-1 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">{activeFilterCount}</span>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className={`h-5 w-5 transition-transform ${filtersVisible ? 'rotate-180' : ''}`}
+                                    className={`h-5 w-5 transition-transform ${filtersVisible ? 'rotate-180 text-primary' : 'text-primary'}`}
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -361,8 +361,7 @@ export default function DugunMekanlari() {
                                                 <path d="M3 18h.01"></path>
                                             </svg>
                                         </button>
-
-                                        <button className="p-2 bg-lightgray text-darkgray border border-border rounded-md hover:bg-gray-200">
+                                        <button className="p-2 bg-lightgray text-primary border border-border rounded-md hover:bg-gray-200">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="3" y="3" width="7" height="7"></rect>
                                                 <rect x="14" y="3" width="7" height="7"></rect>

@@ -83,7 +83,7 @@ export default function FirmaGiris() {
                 <Link href="/" className="flex justify-center">
                     <Image
                         src="/images/logo.png"
-                        alt="Davet Nerede"
+                        alt="Davet Evi Bul"
                         width={60}
                         height={60}
                         className="mx-auto"
@@ -93,7 +93,7 @@ export default function FirmaGiris() {
                     Firma Girişi
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    Davet Nerede platformunda firma hesabınıza giriş yapın
+                    Davet Evi Bul platformunda firma hesabınıza giriş yapın
                 </p>
             </div>
 

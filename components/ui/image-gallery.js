@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, X, Maximize } from 'lucide-react';
 
-export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "object-cover", showArrows = true, allowFullScreen = true }) {
+export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "object-cover", showArrows = true, allowFullScreen = true, showDots = true }) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const touchStartX = useRef(0);
     const touchEndX = useRef(0);
@@ -210,7 +210,7 @@ export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "
             )}
 
             {/* Gösterge noktaları */}
-            {showArrows && imageArray.length > 1 && (
+            {showDots && imageArray.length > 1 && (
                 <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
                     {imageArray.map((_, index) => (
                         <button

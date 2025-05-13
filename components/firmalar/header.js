@@ -62,8 +62,8 @@ export function FirmalarHeader() {
             <div className="container mx-auto px-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <Link href="/" className="flex items-center">
-                        <Image src="/images/logo.png" alt="Davet Nerede" width={36} height={36} />
-                        <span className="text-lg sm:text-xl font-bold text-primary ml-2">Davet Nerede?</span>
+                        <Image src="/images/logo.png" alt="Davet Evi Bul Logo" width={36} height={36} />
+                        <span className="text-lg sm:text-xl font-bold text-primary ml-2">Davet Evi Bul</span>
                     </Link>
 
                     <div className="flex items-center gap-2 sm:gap-4">

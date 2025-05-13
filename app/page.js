@@ -136,7 +136,7 @@ const testimonials = [
     name: 'Ayşe & Mehmet',
     avatar: 'https://randomuser.me/api/portraits/women/32.jpg',
     location: 'İstanbul',
-    comment: 'davetnerede.com sayesinde hayalimizdeki mekanı bulduk. Çok teşekkür ederiz!',
+    comment: 'davetevibul.com sayesinde hayalimizdeki mekanı bulduk. Çok teşekkür ederiz!',
   },
   {
     id: 2,
@@ -321,7 +321,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-text mb-4">Nasıl Çalışır?</h2>
             <p className="text-darkgray max-w-2xl mx-auto">
-              davetnerede.com ile davet salonu bulmak ve teklif almak çok kolay.
+              davetevibul.com ile davet salonu bulmak ve teklif almak çok kolay.
             </p>
           </div>
 
@@ -529,7 +529,7 @@ export default function Home() {
               Hayalinizdeki Daveti Gerçekleştirmek İçin Hemen Başlayın
             </h2>
             <p className="text-darkgray mb-8">
-              davetnerede.com ile davet salonu planlamanızı kolaylaştırın.
+              davetevibul.com ile davet salonu planlamanızı kolaylaştırın.
             </p>
             <Link href="/dugun-mekanlari">
               <Button size="lg" variant="primary" className="shadow-lg hover:shadow-xl transition-shadow">Mekanları Keşfedin</Button>

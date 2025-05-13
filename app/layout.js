@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Davet Nerede',
+  title: 'Davet Evi Bul',
   description: 'Düğün ve davet mekanları platformu',
   viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no',
 }
