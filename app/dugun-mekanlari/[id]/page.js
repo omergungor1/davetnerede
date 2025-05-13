@@ -100,7 +100,7 @@ const venue = {
         },
         {
             id: 3,
-            name: 'Yemekli Söz&Nişan Paketi',
+            name: 'Yemekli Söz&nişan Paketi',
             type: 'İçecek ve Aperatif',
             priceType: 'Toplam',
             price: 40000,
@@ -203,6 +203,16 @@ export default function VenueDetail({ params }) {
         notes: ''
     });
     const [randevuSuccess, setRandevuSuccess] = useState(false);
+    const [showSoruModal, setShowSoruModal] = useState(false);
+    const [soruData, setSoruData] = useState('');
+    const [soruSuccess, setSoruSuccess] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Gerçek uygulamada oturum durumu kontrol edilir
+    const [showYorumModal, setShowYorumModal] = useState(false);
+    const [yorumData, setYorumData] = useState({
+        rating: 0,
+        comment: ''
+    });
+    const [yorumSuccess, setYorumSuccess] = useState(false);
 
     const openLightbox = (index) => {
         setActiveImageIndex(index);
@@ -250,6 +260,70 @@ export default function VenueDetail({ params }) {
                 time: '',
                 topic: '',
                 notes: ''
+            });
+        }, 3000);
+    };
+
+    const handleSoruChange = (e) => {
+        setSoruData(e.target.value);
+    };
+
+    const handleSoruSubmit = (e) => {
+        e.preventDefault();
+        console.log('Soru gönderildi:', soruData);
+
+        // Form işleme simülasyonu
+        setSoruSuccess(true);
+
+        // 3 saniye sonra modalı kapat
+        setTimeout(() => {
+            setSoruSuccess(false);
+            setShowSoruModal(false);
+            setSoruData('');
+        }, 3000);
+    };
+
+    const openSoruModal = () => {
+        // if (isLoggedIn) {
+        setShowSoruModal(true);
+        // } 
+    };
+
+    const openYorumModal = () => {
+        // if (isLoggedIn) {
+        setShowYorumModal(true);
+        // } 
+    };
+
+    const handleYorumChange = (e) => {
+        const { name, value } = e.target;
+        setYorumData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleRatingChange = (rating) => {
+        setYorumData(prev => ({
+            ...prev,
+            rating
+        }));
+    };
+
+    const handleYorumSubmit = (e) => {
+        e.preventDefault();
+        console.log('Yorum gönderildi:', yorumData);
+
+        // Form işleme simülasyonu
+        setYorumSuccess(true);
+
+        // 3 saniye sonra modalı kapat
+        setTimeout(() => {
+            setYorumSuccess(false);
+            setShowYorumModal(false);
+            setYorumData({
+                rating: 0,
+                comment: ''
             });
         }, 3000);
     };
@@ -465,7 +539,14 @@ export default function VenueDetail({ params }) {
                             <CardContent className="p-4 sm:p-6">
                                 <CardTitle className="text-xl mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-text">
                                     <span>Sık Sorulan Sorular</span>
-                                    <Button variant="secondary" size="sm" className="text-sm">Soru Sor</Button>
+                                    <Button
+                                        variant="primary"
+                                        size="md"
+                                        className="flex items-center gap-1 font-medium"
+                                        onClick={openSoruModal}
+                                    >
+                                        <span>Soru Sor</span>
+                                    </Button>
                                 </CardTitle>
 
                                 {venue.questions.length === 0 ? (
@@ -519,37 +600,6 @@ export default function VenueDetail({ params }) {
                                         <Button variant="outline">Daha Fazla Soru Göster</Button>
                                     </div>
                                 )}
-
-                                <div className="mt-8 pt-6 border-t border-border">
-                                    <h3 className="text-lg font-medium mb-4">Soru Sor</h3>
-                                    <form className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1 text-text">Adınız Soyadınız</label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                                placeholder="Adınız Soyadınız"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1 text-text">E-posta</label>
-                                            <input
-                                                type="email"
-                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                                placeholder="E-posta adresiniz"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1 text-text">Sorunuz</label>
-                                            <textarea
-                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                                rows="3"
-                                                placeholder="Sorunuzu buraya yazabilirsiniz..."
-                                            ></textarea>
-                                        </div>
-                                        <Button className="w-full">Soru Gönder</Button>
-                                    </form>
-                                </div>
                             </CardContent>
                         </Card>
 
@@ -558,7 +608,14 @@ export default function VenueDetail({ params }) {
                             <CardContent className="p-6">
                                 <CardTitle className="text-xl mb-4 flex items-center justify-between text-text">
                                     <span>Yorumlar</span>
-                                    <Button variant="secondary" size="sm" className="text-sm">Yorum Yap</Button>
+                                    <Button
+                                        variant="primary"
+                                        size="md"
+                                        className="flex items-center gap-1 font-medium"
+                                        onClick={openYorumModal}
+                                    >
+                                        <span>Yorum Yap</span>
+                                    </Button>
                                 </CardTitle>
 
                                 {venue.comments.length === 0 ? (
@@ -887,7 +944,144 @@ export default function VenueDetail({ params }) {
                     </div>
                 )}
 
+                {/* Soru Sorma Modal */}
+                {showSoruModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-auto relative">
+                            <button
+                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
+                                onClick={() => setShowSoruModal(false)}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-4 sm:p-6">
+                                {soruSuccess ? (
+                                    <div className="py-6 text-center">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                            <svg className="w-8 h-8" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text mb-2">Sorunuz Alındı</h3>
+                                        <p className="text-sm text-darkgray mb-4">
+                                            Sorunuz başarıyla alınmıştır. En kısa sürede yanıtlanacaktır.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h2 className="text-xl font-bold text-text mb-1">Soru Sor</h2>
+                                        <p className="text-sm text-gray-500 mb-4">
+                                            {venue.name} hakkında merak ettiğiniz soruyu yazın
+                                        </p>
 
+                                        <form className="space-y-4" onSubmit={handleSoruSubmit}>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Sorunuz</label>
+                                                <textarea
+                                                    value={soruData}
+                                                    onChange={handleSoruChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    rows="5"
+                                                    placeholder="Sorunuzu buraya yazabilirsiniz..."
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <div className="pt-2">
+                                                <Button type="submit" className="w-full">Soru Gönder</Button>
+                                            </div>
+                                        </form>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Yorum Yapma Modal */}
+                {showYorumModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-auto relative">
+                            <button
+                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
+                                onClick={() => setShowYorumModal(false)}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-4 sm:p-6">
+                                {yorumSuccess ? (
+                                    <div className="py-6 text-center">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                            <svg className="w-8 h-8" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text mb-2">Yorumunuz Alındı</h3>
+                                        <p className="text-sm text-darkgray mb-4">
+                                            Yorumunuz başarıyla kaydedilmiştir. Teşekkür ederiz!
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h2 className="text-xl font-bold text-text mb-1">Yorum Yap</h2>
+                                        <p className="text-sm text-gray-500 mb-4">
+                                            {venue.name} hakkındaki deneyiminizi paylaşın
+                                        </p>
+
+                                        <form className="space-y-5" onSubmit={handleYorumSubmit}>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Puanınız</label>
+                                                <div className="flex items-center gap-2">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => handleRatingChange(star)}
+                                                            className="focus:outline-none transition-colors"
+                                                        >
+                                                            <Star
+                                                                className={`h-8 w-8 ${star <= yorumData.rating
+                                                                        ? 'text-yellow-400 fill-yellow-400'
+                                                                        : 'text-gray-300'
+                                                                    }`}
+                                                            />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {yorumData.rating === 0 && (
+                                                    <p className="text-xs text-red-500 mt-1">Lütfen bir puan verin</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Yorumunuz</label>
+                                                <textarea
+                                                    name="comment"
+                                                    value={yorumData.comment}
+                                                    onChange={handleYorumChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    rows="5"
+                                                    placeholder="Deneyiminizi anlatın..."
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <div className="pt-2">
+                                                <Button
+                                                    type="submit"
+                                                    className="w-full"
+                                                    disabled={yorumData.rating === 0}
+                                                >
+                                                    Yorumu Gönder
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Benzer Mekanlar */}
                 <div className="mb-8">

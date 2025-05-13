@@ -252,7 +252,7 @@ export default function Home() {
       <section className="relative bg-white">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
-            src="/images/hero-background.webp"
+            src="/images/hero-background.jpg"
             alt="Davet salonu arka planı"
             className="w-full h-full object-cover opacity-25"
           />
