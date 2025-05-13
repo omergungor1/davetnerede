@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Layout } from '../../../components/layout';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardTitle } from '../../../components/ui/card';
-import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle, X } from 'lucide-react';
+import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle, X, Calendar, Users } from 'lucide-react';
 import { ImageGallery } from '../../../components/ui/image-gallery';
 
 
@@ -213,6 +213,17 @@ export default function VenueDetail({ params }) {
         comment: ''
     });
     const [yorumSuccess, setYorumSuccess] = useState(false);
+    const [showOnRezervasyonModal, setShowOnRezervasyonModal] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState(null);
+    const [onRezervasyonData, setOnRezervasyonData] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        date: '',
+        guestCount: '',
+        notes: ''
+    });
+    const [onRezervasyonSuccess, setOnRezervasyonSuccess] = useState(false);
 
     const openLightbox = (index) => {
         setActiveImageIndex(index);
@@ -325,6 +336,45 @@ export default function VenueDetail({ params }) {
                 rating: 0,
                 comment: ''
             });
+        }, 3000);
+    };
+
+    const openOnRezervasyonModal = (pkg) => {
+        setSelectedPackage(pkg);
+        setShowOnRezervasyonModal(true);
+    };
+
+    const handleOnRezervasyonChange = (e) => {
+        const { name, value } = e.target;
+        setOnRezervasyonData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleOnRezervasyonSubmit = (e) => {
+        e.preventDefault();
+        console.log('Ön rezervasyon:', {
+            package: selectedPackage,
+            ...onRezervasyonData
+        });
+
+        // Form işleme simülasyonu
+        setOnRezervasyonSuccess(true);
+
+        // 3 saniye sonra modalı kapat
+        setTimeout(() => {
+            setOnRezervasyonSuccess(false);
+            setShowOnRezervasyonModal(false);
+            setOnRezervasyonData({
+                fullName: '',
+                email: '',
+                phone: '',
+                date: '',
+                guestCount: '',
+                notes: ''
+            });
+            setSelectedPackage(null);
         }, 3000);
     };
 
@@ -519,7 +569,7 @@ export default function VenueDetail({ params }) {
                                                         variant="outline"
                                                         size="sm"
                                                         className="text-primary border-primary hover:bg-primary hover:text-white"
-                                                        onClick={() => console.log('Ön Rezervasyon henüz eklenmedi')}
+                                                        onClick={() => openOnRezervasyonModal(pkg)}
                                                     >
                                                         Ön Rezervasyon
                                                     </Button>
@@ -1041,8 +1091,8 @@ export default function VenueDetail({ params }) {
                                                         >
                                                             <Star
                                                                 className={`h-8 w-8 ${star <= yorumData.rating
-                                                                        ? 'text-yellow-400 fill-yellow-400'
-                                                                        : 'text-gray-300'
+                                                                    ? 'text-yellow-400 fill-yellow-400'
+                                                                    : 'text-gray-300'
                                                                     }`}
                                                             />
                                                         </button>
@@ -1075,6 +1125,152 @@ export default function VenueDetail({ params }) {
                                                     Yorumu Gönder
                                                 </Button>
                                             </div>
+                                        </form>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Ön Rezervasyon Modal */}
+                {showOnRezervasyonModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-auto relative">
+                            <button
+                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
+                                onClick={() => setShowOnRezervasyonModal(false)}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-4 sm:p-6">
+                                {onRezervasyonSuccess ? (
+                                    <div className="py-6 text-center">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                            <svg className="w-8 h-8" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text mb-2">Ön Rezervasyon Talebiniz Alındı</h3>
+                                        <p className="text-sm text-darkgray mb-4">
+                                            Ön rezervasyon talebiniz başarıyla alınmıştır. En kısa sürede sizinle iletişime geçilecektir.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h2 className="text-xl font-bold text-text mb-1">Ön Rezervasyon</h2>
+                                        <p className="text-sm text-gray-500 mb-2">
+                                            {venue.name} - {selectedPackage?.name}
+                                        </p>
+
+                                        <div className="bg-primary/5 border border-primary/20 rounded-md p-3 mb-4">
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-sm font-medium text-primary">Paket Fiyatı</p>
+                                                    <p className="text-xs text-gray-500">{selectedPackage?.priceType}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-lg text-text">{selectedPackage?.price} TL</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <form className="space-y-4" onSubmit={handleOnRezervasyonSubmit}>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Ad Soyad</label>
+                                                <input
+                                                    type="text"
+                                                    name="fullName"
+                                                    value={onRezervasyonData.fullName}
+                                                    onChange={handleOnRezervasyonChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="Adınız Soyadınız"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">E-posta</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={onRezervasyonData.email}
+                                                    onChange={handleOnRezervasyonChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="E-posta adresiniz"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Telefon</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={onRezervasyonData.phone}
+                                                    onChange={handleOnRezervasyonChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="05XX XXX XX XX"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="flex gap-4">
+                                                <div className="flex-1">
+                                                    <label className="block text-sm font-medium mb-1 text-text">Tarih</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="date"
+                                                            name="date"
+                                                            value={onRezervasyonData.date}
+                                                            onChange={handleOnRezervasyonChange}
+                                                            className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                            required
+                                                        />
+                                                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <label className="block text-sm font-medium mb-1 text-text">Kişi Sayısı</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            name="guestCount"
+                                                            value={onRezervasyonData.guestCount}
+                                                            onChange={handleOnRezervasyonChange}
+                                                            className="w-full p-3 border border-gray-300 rounded-md text-sm appearance-none"
+                                                            required
+                                                        >
+                                                            <option value="">Seçiniz</option>
+                                                            <option value="50-100">50-100</option>
+                                                            <option value="100-200">100-200</option>
+                                                            <option value="200-300">200-300</option>
+                                                            <option value="300-500">300-500</option>
+                                                            <option value="500+">500+</option>
+                                                        </select>
+                                                        <Users className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Notlar (Opsiyonel)</label>
+                                                <textarea
+                                                    name="notes"
+                                                    value={onRezervasyonData.notes}
+                                                    onChange={handleOnRezervasyonChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    rows="3"
+                                                    placeholder="Eklemek istediğiniz detaylar..."
+                                                ></textarea>
+                                            </div>
+
+                                            <div className="pt-2">
+                                                <Button type="submit" className="w-full">Ön Rezervasyon Yap</Button>
+                                            </div>
+
+                                            <p className="text-xs text-center text-gray-500">
+                                                Ön rezervasyon yapmak ücretsizdir ve herhangi bir yükümlülük gerektirmez.
+                                            </p>
                                         </form>
                                     </>
                                 )}
