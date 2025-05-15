@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/layout';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardTitle } from '../components/ui/card';
@@ -10,6 +10,9 @@ import { Modal } from '../components/ui/modal';
 import { RequestQuoteForm } from '../components/request-quote-form';
 import Image from 'next/image';
 import { ImageGallery } from '../components/ui/image-gallery';
+import turkiyeIlIlce from '../data/turkiye-il-ilce';
+import toast, { Toaster } from 'react-hot-toast';
+import { useLocation } from './context/location-context';
 
 // Örnek veri
 const featuredVenues = [
@@ -108,7 +111,7 @@ const categories = [
     id: 1,
     title: 'Söz & Nişan Mekanları',
     image: '/images/kategori1.avif',
-    url: '/dugun-mekanlari',
+    url: '/salonlar',
   },
   {
     id: 2,
@@ -185,7 +188,7 @@ function FeaturedVenueCard({ title, images, location, price, discount, rating })
             objectFit="object-cover"
             showArrows={false}
             allowFullScreen={false}
-            link={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`}
+            link={`/salonlar/${title.replace(/\s+/g, '-').toLowerCase()}`}
           />
 
           {discount && (
@@ -207,7 +210,7 @@ function FeaturedVenueCard({ title, images, location, price, discount, rating })
           </button>
         </div>
 
-        <Link href={`/dugun-mekanlari/${title.replace(/\s+/g, '-').toLowerCase()}`} className="block p-4 group">
+        <Link href={`/salonlar/${title.replace(/\s+/g, '-').toLowerCase()}`} className="block p-4 group">
           <h3 className="font-medium text-text group-hover:text-primary truncate">{title}</h3>
           <div className="flex justify-between items-center mt-2">
             <p className="text-darkgray text-sm">{location}</p>
@@ -246,10 +249,138 @@ function FeaturedVenueCard({ title, images, location, price, discount, rating })
 }
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const { location, setLocation } = useLocation();
+
+  // Metin içindeki Türkçe karakterleri ve özel karakterleri URL'ye uygun formata dönüştürme
+  const createSlug = (text) => {
+    return text
+      .toLowerCase()
+      .replace(/ı/g, 'i')
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  // Seçilen konuma göre yönlendirme yapan yardımcı fonksiyon
+  const navigateToLocationPage = () => {
+    if (!selectedLocation) {
+      toast.error("Lütfen bir il veya ilçe seçin");
+      return false;
+    }
+
+    const ilSlug = createSlug(selectedLocation.province);
+
+    if (selectedLocation.district) {
+      const ilceSlug = createSlug(selectedLocation.district);
+      window.location.href = `/salonlar/${ilSlug}/${ilceSlug}`;
+    } else {
+      window.location.href = `/salonlar/${ilSlug}`;
+    }
+
+    return true;
+  };
+
+  // Arama sonuçlarını filtreleme
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const filteredProvinces = turkiyeIlIlce.provinces
+      .filter(province => province.name.toLowerCase().includes(query))
+      .map(province => ({ id: province.id, name: province.name, type: 'province' }));
+
+    const filteredDistricts = turkiyeIlIlce.districts
+      .filter(district => district.name.toLowerCase().includes(query))
+      .map(district => {
+        const province = turkiyeIlIlce.provinces.find(p => p.id === district.province_id);
+        return {
+          id: district.id,
+          name: district.name,
+          provinceId: district.province_id,
+          provinceName: province ? province.name : '',
+          type: 'district'
+        };
+      });
+
+    // En fazla 5 il ve 10 ilçe göster
+    const results = [
+      ...filteredProvinces.slice(0, 5),
+      ...filteredDistricts.slice(0, 10)
+    ];
+
+    setSearchResults(results);
+  }, [searchQuery]);
+
+  // Dışarı tıklandığında sonuçları gizleme
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLocationSelect = (item) => {
+    if (item.type === 'province') {
+      setSelectedLocation({
+        province: item.name,
+        district: null
+      });
+      setLocation({
+        province: item.name,
+        district: null
+      });
+      setSearchQuery(item.name);
+    } else { // district
+      setSelectedLocation({
+        province: item.provinceName,
+        district: item.name
+      });
+      setLocation({
+        province: item.provinceName,
+        district: item.name
+      });
+      setSearchQuery(`${item.name}, ${item.provinceName}`);
+    }
+    setShowResults(false);
+  };
+
+  const handleListButtonClick = () => {
+    navigateToLocationPage();
+  };
+
+  const handleViewAllClick = () => {
+    // Hero bölümüne smooth scroll yap
+    const heroElement = document.getElementById('hero');
+    if (heroElement) {
+      heroElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <Layout>
+      <Toaster position="top-center" />
+
       {/* Hero Section */}
-      <section className="relative bg-white">
+      <section className="relative bg-white" id="hero">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="/images/hero-background.jpg"
@@ -266,10 +397,10 @@ export default function Home() {
               Binlerce davet salonu ve hizmet firması arasından size en uygun seçenekleri keşfedin, hemen fiyat teklifi alın!
             </p>
 
-            {/* Arama formu */}
+            {/* Arama Bölümü */}
             <div className="max-w-2xl mx-auto bg-white p-4 rounded-lg mb-4">
               <div className="flex items-center flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
+                <div className="relative flex-1" ref={searchRef}>
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-darkgray">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -278,15 +409,56 @@ export default function Home() {
                   </div>
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowResults(true);
+                    }}
+                    onFocus={() => setShowResults(true)}
                     placeholder="Adres veya bölge arayın (ör. Üsküdar, Sarıyer)"
                     className="w-full pl-10 pr-4 py-3 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
+
+                  {/* Arama Sonuçları Dropdown */}
+                  {showResults && searchResults.length > 0 && (
+                    <div className="absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {searchResults.map((item) => (
+                        <div
+                          key={`${item.type}-${item.id}`}
+                          className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                          onClick={() => handleLocationSelect(item)}
+                        >
+                          <div className="flex items-center">
+                            <MapPin className="w-4 h-4 text-primary mr-2" />
+                            <div>
+                              <span className="font-medium">{item.name}</span>
+                              {item.type === 'district' && (
+                                <span className="text-sm text-darkgray ml-1">({item.provinceName})</span>
+                              )}
+                              <span className="text-xs text-darkgray ml-2">
+                                {item.type === 'province' ? 'İl' : 'İlçe'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {showResults && searchQuery.trim() !== '' && searchResults.length === 0 && (
+                    <div className="absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3 text-center text-darkgray">
+                      Sonuç bulunamadı
+                    </div>
+                  )}
                 </div>
-                <Link href="/dugun-mekanlari">
-                  <Button size="lg" variant="primary" className="whitespace-nowrap">
-                    Firmaları Listele
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  variant="primary"
+                  className="whitespace-nowrap"
+                  onClick={handleListButtonClick}
+                >
+                  Firmaları Listele
+                </Button>
               </div>
             </div>
           </div>
@@ -300,10 +472,13 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-text">Öne Çıkan Mekanlar</h2>
-            <Link href="/dugun-mekanlari" className="text-primary font-medium hover:underline flex items-center">
+            <button
+              onClick={handleViewAllClick}
+              className="text-primary font-medium hover:underline flex items-center"
+            >
               Tümünü Gör
               <ChevronRight size={16} className="ml-1" />
-            </Link>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -531,9 +706,14 @@ export default function Home() {
             <p className="text-darkgray mb-8">
               davetevibul.com ile davet salonu planlamanızı kolaylaştırın.
             </p>
-            <Link href="/dugun-mekanlari">
-              <Button size="lg" variant="primary" className="shadow-lg hover:shadow-xl transition-shadow">Mekanları Keşfedin</Button>
-            </Link>
+            <Button
+              size="lg"
+              variant="primary"
+              className="shadow-lg hover:shadow-xl transition-shadow"
+              onClick={handleViewAllClick}
+            >
+              Mekanları Keşfedin
+            </Button>
           </div>
         </div>
       </section>

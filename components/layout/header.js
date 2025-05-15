@@ -1,16 +1,22 @@
 "use client";
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Search, Heart, Menu, User, X } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, Heart, Menu, User, X, MapPin, LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { AuthModals } from '../auth/auth-modals';
+import { useLocation } from '../../app/context/location-context';
+import { useAuth } from '@/app/context/auth-context';
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const { location, setLocation } = useLocation();
+    const { user, signOut } = useAuth();
+    const userMenuRef = useRef(null);
 
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
@@ -35,6 +41,79 @@ export function Header() {
         setIsRegisterModalOpen(false);
     };
 
+    // Kullanıcı adını göstermek için
+    const getUserDisplayName = () => {
+        if (!user) return '';
+
+        const fullName = user.user_metadata?.full_name;
+        if (fullName) return fullName;
+
+        // E-posta adresinden ilk kısmı al
+        return user.email?.split('@')[0] || 'Kullanıcı';
+    };
+
+    // Kullanıcı avatarı için
+    const getInitials = () => {
+        if (!user) return 'K';
+
+        const fullName = user.user_metadata?.full_name;
+
+        if (fullName) {
+            // Ad ve soyad olarak böl
+            const nameParts = fullName.split(' ');
+
+            if (nameParts.length > 1) {
+                // İlk ve son kelimenin ilk harflerini al
+                return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+            } else {
+                // Sadece ilk harfi al
+                return fullName.charAt(0).toUpperCase();
+            }
+        } else {
+            return user.email?.charAt(0).toUpperCase() || 'K';
+        }
+    };
+
+    // Çıkış işlemi
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+            setUserMenuOpen(false);
+        } catch (error) {
+            console.error('Çıkış hatası:', error);
+        }
+    };
+
+    // Menü dışına tıklandığında menüyü kapat
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+                setUserMenuOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Seçilen konum bilgilerini hazırla
+    const hasLocation = location?.province || location?.district;
+    const displayLocation = hasLocation ?
+        (location.district ?
+            `${location.district}, ${location.province}` :
+            location.province) :
+        null;
+
+    // Konum bilgisini sıfırla
+    const resetLocation = () => {
+        setLocation({
+            province: null,
+            district: null
+        });
+    };
+
     return (
         <>
             <header className="bg-white border-b sticky top-0 z-10">
@@ -53,6 +132,20 @@ export function Header() {
                             <Image src="/images/logo.png" alt="davetevibul logo" width={40} height={40} />
                             <span className="text-xl sm:text-2xl font-bold text-primary">Davet Evi Bul</span>
                         </Link>
+
+                        {/* Seçilen konum bilgisi */}
+                        {hasLocation && (
+                            <div className="hidden md:flex items-center ml-4 bg-primary/10 px-3 py-1 rounded-full">
+                                <MapPin size={16} className="text-primary mr-1" />
+                                <span className="text-sm font-medium text-primary">{displayLocation}</span>
+                                <button
+                                    onClick={resetLocation}
+                                    className="ml-2 text-primary hover:text-primary/80"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        )}
 
                         {/* Mobil Arama Butonu */}
                         <button
@@ -78,18 +171,84 @@ export function Header() {
 
                         {/* Sağ taraf butonları */}
                         <div className="flex items-center md:ml-auto">
-                            <div className="flex items-center text-darkgray hover:text-primary px-2 md:px-3">
-                                <button onClick={openLoginModal} id="login-button" className="hidden md:block text-sm font-medium mr-1">
-                                    GİRİŞ YAP
-                                </button>
-                                <span className="mx-1 text-darkgray hidden md:block">/</span>
-                                <button onClick={openRegisterModal} id="register-button" className="hidden md:block text-sm font-medium">
-                                    ÜYE OL
-                                </button>
-                                <button onClick={openLoginModal} className="md:hidden">
-                                    <User size={20} />
-                                </button>
-                            </div>
+                            {user ? (
+                                <div className="relative" ref={userMenuRef}>
+                                    <button
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                        className="flex items-center ml-2 md:ml-4 gap-2 px-1 py-1 rounded-full hover:bg-gray-100"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-medium text-sm">
+                                            {getInitials()}
+                                        </div>
+                                        <span className="hidden md:block text-sm font-medium">
+                                            {getUserDisplayName()}
+                                        </span>
+                                        <ChevronDown size={16} className="hidden md:block text-gray-500" />
+                                    </button>
+
+                                    {/* Kullanıcı Dropdown Menüsü */}
+                                    {userMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                            <div className="py-1">
+                                                <div className="block px-4 py-2 text-sm text-gray-900 border-b border-gray-200">
+                                                    <div className="font-medium">{getUserDisplayName()}</div>
+                                                    <div className="text-gray-500 truncate">{user.email}</div>
+                                                </div>
+                                                <Link
+                                                    href="/hesabim/profil"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                >
+                                                    Profil Bilgilerim
+                                                </Link>
+                                                <Link
+                                                    href="/hesabim/teklifler"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                >
+                                                    Tekliflerim
+                                                </Link>
+                                                <Link
+                                                    href="/hesabim/randevular"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                >
+                                                    Randevularım
+                                                </Link>
+                                                <Link
+                                                    href="/hesabim/rezervasyonlar"
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                >
+                                                    Rezervasyonlarım
+                                                </Link>
+                                                <button
+                                                    onClick={handleSignOut}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 border-t border-gray-200"
+                                                >
+                                                    <div className="flex items-center">
+                                                        <LogOut size={16} className="mr-2" />
+                                                        Çıkış Yap
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex items-center text-darkgray hover:text-primary px-2 md:px-3">
+                                    <button onClick={openLoginModal} id="login-button" className="hidden md:block text-sm font-medium mr-1">
+                                        GİRİŞ YAP
+                                    </button>
+                                    <span className="mx-1 text-darkgray hidden md:block">/</span>
+                                    <button onClick={openRegisterModal} id="register-button" className="hidden md:block text-sm font-medium">
+                                        ÜYE OL
+                                    </button>
+                                    <button onClick={openLoginModal} className="md:hidden">
+                                        <User size={20} />
+                                    </button>
+                                </div>
+                            )}
 
                             <Link
                                 href="/firmalar-icin"
@@ -120,6 +279,18 @@ export function Header() {
                 {/* Mobil Menü */}
                 <div className={`border-t border-border bg-white overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-112' : 'max-h-0'}`}>
                     <div className="container mx-auto px-4 py-2">
+                        {hasLocation && (
+                            <div className="flex items-center py-2 mb-2 border-b border-border">
+                                <MapPin size={16} className="text-primary mr-2" />
+                                <span className="text-sm font-medium text-primary">{displayLocation}</span>
+                                <button
+                                    onClick={resetLocation}
+                                    className="ml-auto text-primary hover:text-primary/80"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        )}
                         <nav className="flex flex-col">
                             <Link href="/davet-salonlari" className="py-2 text-text hover:text-primary">
                                 Davet Salonları
@@ -142,13 +313,40 @@ export function Header() {
                             <Link href="/firmalar-icin" className="py-2 text-text hover:text-primary">
                                 Firmanızı Ekleyin
                             </Link>
+
                             <div className="pt-2 border-t border-border">
-                                <button onClick={openLoginModal} className="py-2 text-text hover:text-primary w-full text-left">
-                                    Giriş Yap
-                                </button>
-                                <button onClick={openRegisterModal} className="py-2 text-text hover:text-primary w-full text-left">
-                                    Üye Ol
-                                </button>
+                                {user ? (
+                                    <>
+                                        <Link href="/hesabim/profil" className="py-2 text-text hover:text-primary block">
+                                            Profil Bilgilerim
+                                        </Link>
+                                        <Link href="/hesabim/teklifler" className="py-2 text-text hover:text-primary block">
+                                            Tekliflerim
+                                        </Link>
+                                        <Link href="/hesabim/randevularim" className="py-2 text-text hover:text-primary block">
+                                            Randevularım
+                                        </Link>
+                                        <Link href="/hesabim/rezervasyonlarim" className="py-2 text-text hover:text-primary block">
+                                            Rezervasyonlarım
+                                        </Link>
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="py-2 text-red-600 hover:text-red-700 w-full text-left flex items-center"
+                                        >
+                                            <LogOut size={16} className="mr-2" />
+                                            Çıkış Yap
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={openLoginModal} className="py-2 text-text hover:text-primary w-full text-left">
+                                            Giriş Yap
+                                        </button>
+                                        <button onClick={openRegisterModal} className="py-2 text-text hover:text-primary w-full text-left">
+                                            Üye Ol
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </nav>
                     </div>
@@ -158,7 +356,7 @@ export function Header() {
                 <div className="border-t border-border bg-white">
                     <div className="container mx-auto px-4">
                         <nav className="hidden md:flex items-center overflow-x-auto hide-scrollbar py-2">
-                            <Link href="/dugun-mekanlari" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
+                            <Link href="/salonlar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
                                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 18H10V15C10 14.448 9.552 14 9 14H5C4.448 14 4 14.448 4 15V18H2V9.65L7 4.4L12 9.6V18ZM17 18H15V13C15 10.424 12.649 8 10 8H9.83L12 5.93L22 15.3V18H20V15C20 14.448 19.552 14 19 14H17C16.448 14 16 14.448 16 15V18H17Z" fill="currentColor" />
                                 </svg>

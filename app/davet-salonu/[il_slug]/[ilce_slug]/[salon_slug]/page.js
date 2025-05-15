@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Layout } from '../../../components/layout';
-import { Button } from '../../../components/ui/button';
-import { Card, CardContent, CardTitle } from '../../../components/ui/card';
+
+import React, { useState, useEffect } from 'react';
+import { Layout } from '../../../../../components/layout';
+import { Button } from '../../../../../components/ui/button';
+import { Card, CardContent, CardTitle } from '../../../../../components/ui/card';
 import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle, X, Calendar, Users } from 'lucide-react';
-import { ImageGallery } from '../../../components/ui/image-gallery';
+import { ImageGallery } from '../../../../../components/ui/image-gallery';
 
 
 // Örnek mekan verisi
@@ -85,7 +86,6 @@ const venue = {
             type: 'Yemekli',
             priceType: 'Kişi Başı',
             price: 2000,
-            weekendPrice: 2300,
             features: ['5 çeşit sıcak aperatif', 'Limitsiz yerli içecek', '3 çeşit ana yemek', 'Düğün pastası', 'Canlı müzik', 'Özel masa süslemeleri'],
             description: 'Hafta içi saat 12:00-17:00 arası geçerli, menü dahil.'
         },
@@ -189,6 +189,14 @@ const venue = {
 };
 
 export default function VenueDetail({ params }) {
+
+    //parametreden il ilçe ve salon slugini al
+    const unwrappedParams = React.use(params);
+    const { il_slug, ilce_slug, salon_slug } = unwrappedParams;
+    console.log('il_slug', il_slug);
+    console.log('ilce_slug', ilce_slug);
+    console.log('salon_slug', salon_slug);
+
     // Resim galerisi için state
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -224,16 +232,26 @@ export default function VenueDetail({ params }) {
         notes: ''
     });
     const [onRezervasyonSuccess, setOnRezervasyonSuccess] = useState(false);
+    const [showTeklifModal, setShowTeklifModal] = useState(false);
+    const [teklifFormData, setTeklifFormData] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        date: '',
+        isDateUndecided: false,
+        guestCount: '',
+        notes: '',
+        terms: false
+    });
+    const [teklifSuccess, setTeklifSuccess] = useState(false);
 
     const openLightbox = (index) => {
         setActiveImageIndex(index);
         setLightboxOpen(true);
-        document.body.style.overflow = 'hidden';
     };
 
     const closeLightbox = () => {
         setLightboxOpen(false);
-        document.body.style.overflow = 'auto';
     };
 
     const nextImage = () => {
@@ -378,8 +396,68 @@ export default function VenueDetail({ params }) {
         }, 3000);
     };
 
+    const handleTeklifChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
+        if (type === 'checkbox') {
+            if (name === 'isDateUndecided') {
+                setTeklifFormData(prev => ({
+                    ...prev,
+                    [name]: checked,
+                    date: checked ? '' : prev.date
+                }));
+            } else {
+                setTeklifFormData(prev => ({
+                    ...prev,
+                    [name]: checked
+                }));
+            }
+        } else {
+            setTeklifFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+    };
+
+    const handleTeklifSubmit = (e) => {
+        e.preventDefault();
+        console.log('Teklif formunu gönderildi:', teklifFormData);
+
+        // Form işleme simülasyonu
+        setTeklifSuccess(true);
+
+        // 3 saniye sonra modalı kapat
+        setTimeout(() => {
+            setTeklifSuccess(false);
+            setShowTeklifModal(false);
+            setTeklifFormData({
+                fullName: '',
+                email: '',
+                phone: '',
+                date: '',
+                isDateUndecided: false,
+                guestCount: '',
+                notes: '',
+                terms: false
+            });
+        }, 3000);
+    };
+
+    const openTeklifModalWithPackage = (pkg) => {
+        setSelectedPackage(pkg);
+        setShowTeklifModal(true);
+    };
+
+    const handleCloseTeklifModal = () => {
+        setShowTeklifModal(false);
+        setSelectedPackage(null);
+    };
+
     // Klavye olayları için useEffect
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const handleKeyDown = (e) => {
             if (!lightboxOpen) return;
 
@@ -388,10 +466,25 @@ export default function VenueDetail({ params }) {
             if (e.key === 'ArrowLeft') prevImage();
         };
 
-        document.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            document.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [lightboxOpen]);
+
+    // Lightbox açık/kapalı durumu için body overflow kontrolü
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        if (lightboxOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+
+        return () => {
+            document.body.style.overflow = 'auto';
         };
     }, [lightboxOpen]);
 
@@ -403,8 +496,8 @@ export default function VenueDetail({ params }) {
                 {/* Breadcrumb */}
                 <div className="text-sm text-darkgray mb-4">
                     <a href="/" className="hover:text-primary">Anasayfa</a> {' > '}
-                    <a href="/dugun-mekanlari" className="hover:text-primary">Düğün Mekanları</a> {' > '}
-                    <a href="/dugun-mekanlari/istanbul" className="hover:text-primary">İstanbul</a> {' > '}
+                    <a href="/salonlar" className="hover:text-primary">Düğün Mekanları</a> {' > '}
+                    <a href="/salonlar/istanbul" className="hover:text-primary">İstanbul</a> {' > '}
                     <span className="text-primary">{venue.name}</span>
                 </div>
 
@@ -538,11 +631,6 @@ export default function VenueDetail({ params }) {
                                                         <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
                                                             {pkg.type}
                                                         </span>
-                                                        {pkg.priceType === 'Kişi Başı' && pkg.weekendPrice && (
-                                                            <span className="text-xs text-gray-500">
-                                                                H.sonu: {pkg.weekendPrice} TL
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -564,7 +652,15 @@ export default function VenueDetail({ params }) {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <div className="flex justify-end">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-primary border-primary hover:bg-primary hover:text-white"
+                                                        onClick={() => openTeklifModalWithPackage(pkg)}
+                                                    >
+                                                        Teklif Al
+                                                    </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -687,6 +783,9 @@ export default function VenueDetail({ params }) {
                                                 <p className="text-sm text-darkgray">{comment.comment}</p>
                                             </div>
                                         ))}
+                                        <div className="mt-6 flex justify-center">
+                                            <Button variant="outline">Daha Fazla Yorum Göster</Button>
+                                        </div>
                                     </div>
                                 )}
                             </CardContent>
@@ -699,76 +798,20 @@ export default function VenueDetail({ params }) {
                             <CardContent className="p-4 sm:p-6">
                                 <CardTitle className="text-xl mb-4 text-text">Ücretsiz Teklif Al</CardTitle>
 
-                                <form className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">Ad Soyad</label>
-                                        <input
-                                            type="text"
-                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                            placeholder="Adınız Soyadınız"
-                                        />
-                                    </div>
+                                <p className="text-sm text-darkgray mb-4">
+                                    {venue.name} hakkında detaylı bilgi ve fiyat teklifi almak için aşağıdaki butona tıklayın.
+                                </p>
 
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">E-posta</label>
-                                        <input
-                                            type="email"
-                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                            placeholder="E-posta adresiniz"
-                                        />
-                                    </div>
+                                <Button
+                                    className="w-full text-sm"
+                                    onClick={() => setShowTeklifModal(true)}
+                                >
+                                    Ücretsiz Teklif Al
+                                </Button>
 
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">Telefon</label>
-                                        <input
-                                            type="tel"
-                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                            placeholder="Telefon numaranız"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">Davet Tarihi</label>
-                                        <input
-                                            type="date"
-                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">Misafir Sayısı</label>
-                                        <select className="w-full p-2 border border-gray-300 rounded-md text-sm">
-                                            <option value="">Seçiniz</option>
-                                            <option value="0-50">0-50 kişi</option>
-                                            <option value="51-100">51-100 kişi</option>
-                                            <option value="101-200">101-200 kişi</option>
-                                            <option value="201-500">201-500 kişi</option>
-                                            <option value="500+">500+ kişi</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-text">Mesajınız (İsteğe bağlı)</label>
-                                        <textarea
-                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                            rows="3"
-                                            placeholder="Mesajınızı buraya yazabilirsiniz..."
-                                        ></textarea>
-                                    </div>
-
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="terms" className="mr-2" />
-                                        <label htmlFor="terms" className="text-xs text-gray-600">
-                                            Kişisel bilgilerimin düğün salonu ile paylaşılmasını onaylıyorum.
-                                        </label>
-                                    </div>
-
-                                    <Button className="w-full text-sm">Ücretsiz Teklif Al</Button>
-
-                                    <div className="text-center mt-2 text-xs text-gray-500">
-                                        24 saat içinde dönüş alacaksınız
-                                    </div>
-                                </form>
+                                <div className="text-center mt-2 text-xs text-gray-500">
+                                    24 saat içinde dönüş alacaksınız
+                                </div>
 
                                 <div className="mt-4 pt-4 border-t border-border">
                                     <Button
@@ -804,13 +847,32 @@ export default function VenueDetail({ params }) {
 
                                 <div className="mt-4">
                                     <div className="aspect-w-16 aspect-h-9">
-                                        <iframe
-                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12041.468653376351!2d29.1028!3d41.0165!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDAyJzM5LjAiTiAyOcKwMDUnMzAuMCJF!5e0!3m2!1str!2str!4v1620000000000!5m2!1str!2str"
-                                            className="w-full h-48 border-0 rounded"
-                                            allowFullScreen=""
-                                            loading="lazy"
-                                            title="Konum"
-                                        ></iframe>
+                                        {/* Google Maps iframe'i yerine statik bir harita gösterimi */}
+                                        <div className="w-full h-48 rounded overflow-hidden relative">
+                                            {/* Bulanık arka plan resmi */}
+                                            <div className="absolute inset-0">
+                                                <img
+                                                    src="/images/map_photo.jpg"
+                                                    alt="Harita arka planı"
+                                                    className="w-full h-full object-cover filter blur-sm scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-black/10"></div>
+                                            </div>
+
+                                            {/* Ön plan içeriği */}
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+                                                <MapPin className="w-8 h-8 text-white mb-2" />
+                                                <div className="text-white font-medium mb-2">Haritada Görüntüle</div>
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.address)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="bg-white text-primary px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+                                                >
+                                                    Google Maps'te Aç
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -831,22 +893,16 @@ export default function VenueDetail({ params }) {
                                             <div className="flex-1">
                                                 <h3 className="font-medium text-text">{member.name}</h3>
                                                 <p className="text-sm text-primary mb-2">{member.position}</p>
-                                                <div className="space-y-1 text-sm">
-                                                    <p className="flex items-center text-gray-600">
-                                                        <Phone className="h-3 w-3 mr-2" />
-                                                        <a href={`tel:${member.phone}`} className="hover:text-primary">{member.phone}</a>
-                                                    </p>
-                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-shrink-0 flex items-center gap-1 text-xs mt-2 sm:mt-0"
+                                                    onClick={() => window.location.href = `tel:${member.phone}`}
+                                                >
+                                                    <Phone className="h-3 w-3" />
+                                                    <span>{member.phone}</span>
+                                                </Button>
                                             </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex-shrink-0 flex items-center gap-1 text-xs mt-2 sm:mt-0"
-                                                onClick={() => setShowRandevuModal(true)}
-                                            >
-                                                <Mail className="h-3 w-3" />
-                                                <span>Randevu Al</span>
-                                            </Button>
                                         </div>
                                     ))}
                                 </div>
@@ -1270,6 +1326,222 @@ export default function VenueDetail({ params }) {
 
                                             <p className="text-xs text-center text-gray-500">
                                                 Ön rezervasyon yapmak ücretsizdir ve herhangi bir yükümlülük gerektirmez.
+                                            </p>
+                                        </form>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Teklif Alma Modal */}
+                {showTeklifModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4"
+                        onClick={(e) => {
+                            // Modal dışına tıklanırsa modalı kapat
+                            if (e.target === e.currentTarget) {
+                                handleCloseTeklifModal();
+                            }
+                        }}
+                    >
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-auto relative">
+                            <button
+                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
+                                onClick={handleCloseTeklifModal}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-4 sm:p-6">
+                                {teklifSuccess ? (
+                                    <div className="py-6 text-center">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                            <svg className="w-8 h-8" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text mb-2">Teklif Talebiniz Alındı</h3>
+                                        <p className="text-sm text-darkgray mb-4">
+                                            Teklif talebiniz başarıyla alınmıştır. 24 saat içinde sizinle iletişime geçilecektir.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h2 className="text-xl font-bold text-text mb-1">Ücretsiz Teklif Al</h2>
+                                        <p className="text-sm text-gray-500 mb-2">
+                                            {venue.name}{selectedPackage ? ` - ${selectedPackage.name}` : ''}
+                                        </p>
+
+                                        <form className="space-y-4" onSubmit={handleTeklifSubmit}>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Paket Seçimi</label>
+                                                {selectedPackage ? (
+                                                    <div className="bg-primary/5 border border-primary/20 rounded-md p-3 hover:bg-primary/10 cursor-pointer transition-colors"
+                                                        onClick={() => setSelectedPackage(null)}
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-primary">{selectedPackage.name}</p>
+                                                                <p className="text-xs text-gray-500">{selectedPackage.type} | {selectedPackage.priceType}</p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="font-bold text-lg text-text">{selectedPackage.price} TL</p>
+                                                                <button
+                                                                    type="button"
+                                                                    className="text-xs text-primary underline"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setSelectedPackage(null);
+                                                                    }}
+                                                                >
+                                                                    Değiştir
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <select
+                                                        name="packageSelect"
+                                                        className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                        onChange={(e) => {
+                                                            const selectedId = parseInt(e.target.value);
+                                                            if (selectedId) {
+                                                                const pkg = venue.packages.find(p => p.id === selectedId);
+                                                                setSelectedPackage(pkg);
+                                                            } else {
+                                                                setSelectedPackage(null);
+                                                            }
+                                                        }}
+                                                        value={selectedPackage?.id || ""}
+                                                    >
+                                                        <option value="">Paket seçiniz (opsiyonel)</option>
+                                                        {venue.packages.map((pkg) => (
+                                                            <option key={pkg.id} value={pkg.id}>
+                                                                {pkg.name} - {pkg.price} TL ({pkg.priceType})
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Ad Soyad</label>
+                                                <input
+                                                    type="text"
+                                                    name="fullName"
+                                                    value={teklifFormData.fullName}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="Adınız Soyadınız"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">E-posta</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={teklifFormData.email}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="E-posta adresiniz"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Telefon</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={teklifFormData.phone}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    placeholder="Telefon numaranız"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <div className="flex justify-between items-center">
+                                                    <label className="block text-sm font-medium mb-1 text-text">Davet Tarihi</label>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="dateNotDecided"
+                                                            name="isDateUndecided"
+                                                            checked={teklifFormData.isDateUndecided}
+                                                            onChange={handleTeklifChange}
+                                                            className="mr-2"
+                                                        />
+                                                        <label htmlFor="dateNotDecided" className="text-xs text-gray-600">
+                                                            Henüz belli değil
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <input
+                                                    type="date"
+                                                    name="date"
+                                                    value={teklifFormData.date}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    disabled={teklifFormData.isDateUndecided}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Misafir Sayısı</label>
+                                                <select
+                                                    name="guestCount"
+                                                    value={teklifFormData.guestCount}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    required
+                                                >
+                                                    <option value="">Seçiniz</option>
+                                                    <option value="0-50">0-50 kişi</option>
+                                                    <option value="51-100">51-100 kişi</option>
+                                                    <option value="101-200">101-200 kişi</option>
+                                                    <option value="201-500">201-500 kişi</option>
+                                                    <option value="500+">500+ kişi</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1 text-text">Mesajınız (İsteğe bağlı)</label>
+                                                <textarea
+                                                    name="notes"
+                                                    value={teklifFormData.notes}
+                                                    onChange={handleTeklifChange}
+                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
+                                                    rows="3"
+                                                    placeholder="Mesajınızı buraya yazabilirsiniz..."
+                                                ></textarea>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    id="terms"
+                                                    name="terms"
+                                                    checked={teklifFormData.terms}
+                                                    onChange={handleTeklifChange}
+                                                    className="mr-2"
+                                                    required
+                                                />
+                                                <label htmlFor="terms" className="text-xs text-gray-600">
+                                                    Kişisel bilgilerimin düğün salonu ile paylaşılmasını onaylıyorum.
+                                                </label>
+                                            </div>
+
+                                            <div className="pt-2">
+                                                <Button type="submit" className="w-full text-sm">Ücretsiz Teklif Al</Button>
+                                            </div>
+
+                                            <p className="text-xs text-center text-gray-500">
+                                                24 saat içinde dönüş alacaksınız
                                             </p>
                                         </form>
                                     </>

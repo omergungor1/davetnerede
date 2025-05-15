@@ -1,0 +1,85 @@
+// Örnek firma verileri
+    const [firmaData, setFirmaData
+] = useState({
+        id: 1,
+        adi: 'Mövenpick Hotel İstanbul Asia Airport',
+        email: 'info@movenpick.com',
+        telefon: '0216 666 64 64',
+        adres: 'Fatih Sultan Mehmet Mahallesi, Balkan Caddesi No: 58,
+    34770 Ümraniye/İstanbul',
+        kurulusTarihi: '2010',
+        paket: 'Premium',
+        aciklama: 'Modern ve ihtişamlı atmosferiyle Mövenpick Hotel İstanbul Asia Airport, hayalinizdeki düğün için mükemmel bir mekan. Geniş salonları, profesyonel hizmet anlayışı ve lezzetli menüleriyle unutulmaz bir düğün deneyimi yaşamanızı sağlar.',
+        sosyalMedya: {
+            instagram: 'movenpickistanbul',
+            facebook: 'movenpickhotelasia',
+            twitter: 'movenpickist'
+    },
+        fotolar: [
+            '/images/salon-1.webp',
+            '/images/salon-2.webp',
+            '/images/salon-4.webp',
+            '/images/salon-6.webp',
+    ],
+        kapakresimiIndex: 0,
+        rezervasyonlar: [
+        {
+                id: 1,
+                name: 'Ayşe Yılmaz',
+                date: '25.07.2024',
+                guestCount: 150,
+                status: 'beklemede',
+                message: 'Düğünümüz için bilgi almak istiyoruz. Belirtilen tarihte salon müsait mi?',
+                phone: '0555 123 4567',
+                email: 'ayse@example.com',
+                createdAt: '20.05.2024'
+        },
+        {
+                id: 2,
+                name: 'Mehmet Demir',
+                date: '12.08.2024',
+                guestCount: 200,
+                status: 'onaylandı',
+                message: 'Yemekli organizasyon fiyatı hakkında detaylı bilgi almak istiyoruz.',
+                phone: '0532 987 6543',
+                email: 'mehmet@example.com',
+                createdAt: '15.05.2024'
+        },
+        {
+                id: 3,
+                name: 'Zeynep Kaya',
+                date: '05.10.2024',
+                guestCount: 80,
+                status: 'beklemede',
+                message: 'Nikah sonrası kokteyl düşünüyoruz. Dış mekan seçenekleriniz var mı?',
+                phone: '0541 456 7890',
+                email: 'zeynep@example.com',
+                createdAt: '21.05.2024'
+        ],
+        sorular: [
+            {
+                id: 1,
+                user: 'Nazlı T.',
+                question: 'Hafta içi organizasyonlarda fiyat indirimi yapıyor musunuz?',
+                date: '10.05.2024',
+                answer: 'Evet, hafta içi organizasyonlarımızda %15 indirim sağlıyoruz. Detaylı bilgi için bize ulaşabilirsiniz.',
+                answerDate: '11.05.2024'
+            },
+            {
+                id: 2,
+                user: 'Kerem A.',
+                question: 'Mekanınızda düğün dışında doğum günü organizasyonu da yapılabiliyor mu?',
+                date: '15.05.2024',
+                answer: 'Kesinlikle, doğum günü organizasyonları için özel paketlerimiz bulunmaktadır. Size özel fiyat teklifi için iletişime geçebilirsiniz.',
+                answerDate: '16.05.2024'
+            },
+            {
+                id: 3,
+                user: 'Selin B.',
+                question: 'İslami düğün organizasyonu yapıyor musunuz? Ayrı salonlarınız var mı?',
+                date: '18.05.2024',
+                answer: null,
+                answerDate: null
+            }
+        ]
+    });

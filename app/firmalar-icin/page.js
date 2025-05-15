@@ -5,14 +5,17 @@ import Image from 'next/image';
 import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import turkiyeIlIlce from '../../data/turkiye-il-ilce';
+import { formatPhoneNumber } from '@/components/ui/utils';
 
 export default function FirmalarIcin() {
     const [formData, setFormData] = useState({
-        isim: '',
+        ad: '',
         telefon: '',
         firma: '',
         email: '',
         sehir: '',
+        ilce: '',
         mesaj: '',
     });
     const [formSubmitted, setFormSubmitted] = useState(false);
@@ -23,12 +26,34 @@ export default function FirmalarIcin() {
     const [activeAccordion, setActiveAccordion] = useState(null);
     const faqRefs = useRef([]);
 
+    const [ilceler, setIlceler] = useState([]);
+
+    // İl değiştiğinde ilçeleri güncelle
+    useEffect(() => {
+        if (formData.sehir) {
+            const selectedProvince = turkiyeIlIlce.provinces.find(
+                p => p.name === formData.sehir
+            );
+
+            if (selectedProvince) {
+                // Bu ile ait tüm ilçeleri filtrele
+                const districts = turkiyeIlIlce.districts.filter(
+                    d => d.province_id === selectedProvince.id
+                ).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+
+                setIlceler(districts);
+
+                // İl değiştiğinde ilçe seçimini sıfırla
+                setFormData(prev => ({ ...prev, ilce: '' }));
+            }
+        } else {
+            setIlceler([]);
+        }
+    }, [formData.sehir]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
@@ -45,6 +70,7 @@ export default function FirmalarIcin() {
                 telefon: '',
                 firma: '',
                 sehir: '',
+                ilce: '',
                 email: '',
                 mesaj: ''
             });
@@ -378,32 +404,17 @@ export default function FirmalarIcin() {
                                     <form onSubmit={handleSubmit} className="space-y-5">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="isim" className="block text-sm font-medium text-text mb-1">İsim Soyisim</label>
+                                                <label htmlFor="ad" className="block text-sm font-medium text-text mb-1">Ad Soyad</label>
                                                 <input
                                                     type="text"
-                                                    id="isim"
-                                                    name="isim"
-                                                    value={formData.isim}
+                                                    id="ad"
+                                                    name="ad"
+                                                    value={formData.ad}
                                                     onChange={handleChange}
                                                     required
                                                     className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                 />
                                             </div>
-                                            <div>
-                                                <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
-                                                <input
-                                                    type="tel"
-                                                    id="telefon"
-                                                    name="telefon"
-                                                    value={formData.telefon}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label htmlFor="firma" className="block text-sm font-medium text-text mb-1">Firma Adı</label>
                                                 <input
@@ -416,8 +427,41 @@ export default function FirmalarIcin() {
                                                     className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                 />
                                             </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">Şehir</label>
+                                                <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
+                                                <input
+                                                    type="tel"
+                                                    id="telefon"
+                                                    name="telefon"
+                                                    value={formatPhoneNumber(formData.telefon)}
+                                                    placeholder="05XX XXX XX XX"
+                                                    maxLength={14}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta Adresi</label>
+                                                <input
+                                                    type="email"
+                                                    id="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                />
+                                            </div>
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">İl</label>
                                                 <select
                                                     id="sehir"
                                                     name="sehir"
@@ -427,30 +471,36 @@ export default function FirmalarIcin() {
                                                     className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                 >
                                                     <option value="">Seçiniz</option>
-                                                    <option value="Adana">Adana</option>
-                                                    <option value="Adıyaman">Adıyaman</option>
-                                                    <option value="Afyon">Afyon</option>
-                                                    <option value="Ankara">Ankara</option>
-                                                    <option value="Antalya">Antalya</option>
-                                                    <option value="Bursa">Bursa</option>
-                                                    <option value="İstanbul">İstanbul</option>
-                                                    <option value="İzmir">İzmir</option>
-                                                    {/* Diğer şehirler buraya eklenebilir */}
+                                                    {turkiyeIlIlce.provinces.sort((a, b) =>
+                                                        a.name.localeCompare(b.name, 'tr')
+                                                    ).map(province => (
+                                                        <option key={province.id} value={province.name}>
+                                                            {province.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                             </div>
-                                        </div>
 
-                                        <div>
-                                            <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta Adresi</label>
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                required
-                                                className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            />
+                                            <div>
+                                                <label htmlFor="ilce" className="block text-sm font-medium text-text mb-1">İlçe</label>
+                                                <select
+                                                    id="ilce"
+                                                    name="ilce"
+                                                    value={formData.ilce}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                    disabled={!formData.sehir}
+                                                >
+                                                    <option value="">Seçiniz</option>
+                                                    {ilceler.map(district => (
+                                                        <option key={district.id} value={district.name}>
+                                                            {district.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
                                         </div>
 
                                         <div>

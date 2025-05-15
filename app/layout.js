@@ -1,19 +1,25 @@
 import './globals.css'
+import ClientLayoutWrapper from './client-layout'
 
 export const metadata = {
   title: 'Davet Evi Bul',
   description: 'Düğün ve davet mekanları platformu',
-  viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+  maximumScale: 1.0,
+  userScalable: 'no'
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="tr" className="overflow-x-hidden">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </head>
       <body className="overflow-x-hidden">
-        {children}
+        <ClientLayoutWrapper>
+          {children}
+        </ClientLayoutWrapper>
       </body>
     </html>
   )

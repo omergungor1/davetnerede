@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '../ui/button';
-import { Modal } from '../ui/modal';
+import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
+import { formatPhoneNumber } from '@/components/ui/utils';
+import turkiyeIlIlce from '@/data/turkiye-il-ilce';
 
 export function FirmalarHeader() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -18,6 +20,7 @@ export function FirmalarHeader() {
         telefon: ''
     });
     const [isSuccess, setIsSuccess] = useState(false);
+    const [ilceler, setIlceler] = useState([]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,6 +29,29 @@ export function FirmalarHeader() {
             [name]: value
         }));
     };
+
+    // İl değiştiğinde ilçeleri güncelle
+    useEffect(() => {
+        if (formData.sehir) {
+            const selectedProvince = turkiyeIlIlce.provinces.find(
+                p => p.name === formData.sehir
+            );
+
+            if (selectedProvince) {
+                // Bu ile ait tüm ilçeleri filtrele
+                const districts = turkiyeIlIlce.districts.filter(
+                    d => d.province_id === selectedProvince.id
+                ).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+
+                setIlceler(districts);
+
+                // İl değiştiğinde ilçe seçimini sıfırla
+                setFormData(prev => ({ ...prev, ilce: '' }));
+            }
+        } else {
+            setIlceler([]);
+        }
+    }, [formData.sehir]);
 
     const handleNextStep = (e) => {
         e.preventDefault();
@@ -116,27 +142,43 @@ export function FirmalarHeader() {
                                 </div>
                                 <div>
                                     <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">Şehir</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         id="sehir"
                                         name="sehir"
                                         value={formData.sehir}
                                         onChange={handleChange}
                                         required
                                         className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
+                                    >
+                                        <option value="">Seçiniz</option>
+                                        {turkiyeIlIlce.provinces.sort((a, b) =>
+                                            a.name.localeCompare(b.name, 'tr')
+                                        ).map(province => (
+                                            <option key={province.id} value={province.name}>
+                                                {province.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
+
                                 <div>
                                     <label htmlFor="ilce" className="block text-sm font-medium text-text mb-1">İlçe</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         id="ilce"
                                         name="ilce"
                                         value={formData.ilce}
                                         onChange={handleChange}
                                         required
                                         className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    />
+                                        disabled={!formData.sehir}
+                                    >
+                                        <option value="">Seçiniz</option>
+                                        {ilceler.map(district => (
+                                            <option key={district.id} value={district.name}>
+                                                {district.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="pt-2">
                                     <Button type="submit" className="w-full">
@@ -159,24 +201,27 @@ export function FirmalarHeader() {
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta</label>
+                                    <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon</label>
                                     <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        value={formData.email}
+                                        type="tel"
+                                        id="telefon"
+                                        name="telefon"
+                                        value={formatPhoneNumber(formData.telefon)}
+                                        maxLength={14}
+                                        placeholder="05XX XXX XX XX"
                                         onChange={handleChange}
                                         required
                                         className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon</label>
+                                    <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta</label>
                                     <input
-                                        type="tel"
-                                        id="telefon"
-                                        name="telefon"
-                                        value={formData.telefon}
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        placeholder="ornek@gmail.com"
+                                        value={formData.email}
                                         onChange={handleChange}
                                         required
                                         className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"

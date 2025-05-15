@@ -18,7 +18,7 @@ export function Footer() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-8 md:mt-0">
+                    <div className="grid grid-cols-2 gap-8 mt-8 md:mt-0">
                         <div>
                             <h3 className="font-semibold mb-3 text-sm text-text">Firmalar İçin</h3>
                             <ul className="space-y-2">
@@ -36,13 +36,6 @@ export function Footer() {
                                 <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Ankara</Link></li>
                                 <li><Link href="#" className="text-sm text-darkgray hover:text-primary">İzmir</Link></li>
                                 <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Bursa</Link></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="font-semibold mb-3 text-sm text-text">Popüler Alanlar</h3>
-                            <ul className="space-y-2">
-                                <li><Link href="#" className="text-sm text-darkgray hover:text-primary">Davet Evleri</Link></li>
                             </ul>
                         </div>
                     </div>

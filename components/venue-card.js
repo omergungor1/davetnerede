@@ -124,7 +124,7 @@ export function VenueCard({ venue }) {
                             >
                                 Teklif Al
                             </button>
-                            <Link href={`/dugun-mekanlari/${venue.id}`} className="bg-primary text-white text-sm rounded px-3 py-1 hover:bg-primary/90 transition-colors">
+                            <Link href={`/davet-salonu/${venue.slug}`} className="bg-primary text-white text-sm rounded px-3 py-1 hover:bg-primary/90 transition-colors">
                                 İncele
                             </Link>
                         </div>
