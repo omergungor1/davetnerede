@@ -4,9 +4,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/auth-context';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function FirmaGiris() {
     const router = useRouter();
+    const { signIn } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -34,17 +37,22 @@ export default function FirmaGiris() {
         setError('');
 
         try {
-            // Burada gerçek API çağrısı yapılacak
-            console.log('Giriş yapılıyor', formData);
+            // Auth context'ten signIn fonksiyonunu kullanarak giriş yap
+            const { data, error } = await signIn(
+                formData.email,
+                formData.password
+            );
 
-            // Simüle edilmiş bir giriş işlemi (gerçek projede API çağrısı yapılacak)
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            if (error) {
+                throw error;
+            }
 
-            // Giriş başarılı olduğunda yönlendirme
-            router.push('/firma-profil');
+            // Giriş başarılı olduğunda yönlendirme yap
+            toast.success('Giriş başarılı! Yönlendiriliyorsunuz...');
+            router.push('/firma-profil'); // Başarılı girişte kullanıcıyı firma profil sayfasına yönlendir
         } catch (err) {
-            setError('Giriş yapılamadı. Lütfen bilgilerinizi kontrol ediniz.');
             console.error('Giriş hatası:', err);
+            setError(err.message || 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol ediniz.');
         } finally {
             setIsLoading(false);
         }
@@ -257,7 +265,14 @@ export default function FirmaGiris() {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="mt-6 flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/')}
+                                    className={`w-full flex justify-center py-2 px-4 border border-primary rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
+                                >
+                                    Ana Sayfa
+                                </button>
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -282,13 +297,19 @@ export default function FirmaGiris() {
                         </div>
 
                         <div className="mt-6 text-center">
-                            <Link href="/firmalar-icin" className="font-medium text-primary hover:text-primary/80">
+                            <Link href="/firmalar-icin/kayit" className="font-medium text-primary hover:text-primary/80">
                                 Hemen ücretsiz firma hesabı oluşturun
                             </Link>
                         </div>
                     </div>
                 </div>
             </div>
+            <div className="mt-6 text-center text-sm text-gray-600">
+                <Link href="/firmalar-icin" className="font-medium text-primary hover:text-primary/80">
+                    ← Firma Sayfasına Dön
+                </Link>
+            </div>
+            <Toaster position="top-right" />
         </main>
     );
 } 

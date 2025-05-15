@@ -58,7 +58,7 @@ export function FirmalarFooter() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/firma-giris" className="text-darkgray hover:text-primary transition-colors">
+                                <Link href="/firmalar-icin/giris" className="text-darkgray hover:text-primary transition-colors">
                                     Firma Girişi
                                 </Link>
                             </li>

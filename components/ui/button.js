@@ -1,70 +1,41 @@
 "use client";
 
-import Link from 'next/link';
-import { clsx } from 'clsx';
-
-const variantStyles = {
-    primary: 'bg-primary text-white hover:bg-primary/90',
-    secondary: 'bg-secondary text-text hover:bg-lightgray',
-    outline: 'bg-white border border-primary text-primary hover:bg-primary hover:text-white',
-};
-
-const sizeStyles = {
-    sm: 'text-sm px-3 py-1 rounded',
-    md: 'text-sm px-4 py-2 rounded',
-    lg: 'text-base px-5 py-2.5 rounded-md',
-};
+import React from "react";
 
 export function Button({
     children,
-    className,
-    variant = 'primary',
-    size = 'md',
-    href,
-    disabled,
-    type = 'button',
+    type = "button",
+    disabled = false,
+    variant = "default",
+    size = "default",
+    className = "",
     onClick,
     ...props
 }) {
-    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors focus:outline-none";
+    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-50 disabled:pointer-events-none";
 
     const variants = {
-        primary: "bg-primary text-white hover:bg-primary/90",
-        secondary: "bg-gray-200 text-text hover:bg-gray-300",
-        outline: "bg-transparent border border-primary text-primary hover:bg-primary/10",
-        link: "bg-transparent text-primary hover:underline p-0",
+        default: "bg-primary text-white hover:bg-primary/90 active:bg-primary/80",
+        outline: "border border-primary text-primary hover:bg-primary/5 active:bg-primary/10",
+        ghost: "text-primary hover:bg-primary/5 active:bg-primary/10",
+        destructive: "bg-red-500 text-white hover:bg-red-600 active:bg-red-700",
     };
 
     const sizes = {
-        sm: "text-xs px-3 py-1.5 rounded",
-        md: "text-sm px-4 py-2 rounded-md",
+        sm: "text-xs px-2.5 py-1.5 rounded",
+        default: "text-sm px-4 py-2 rounded-md",
         lg: "text-base px-6 py-3 rounded-md",
     };
 
-    const disabledStyles = "opacity-50 cursor-not-allowed pointer-events-none";
-
-    const classes = clsx(
-        baseStyles,
-        variants[variant],
-        sizes[size],
-        disabled && disabledStyles,
-        className
-    );
-
-    if (href && !disabled) {
-        return (
-            <Link href={href} className={classes} {...props}>
-                {children}
-            </Link>
-        );
-    }
+    const variantStyle = variants[variant] || variants.default;
+    const sizeStyle = sizes[size] || sizes.default;
 
     return (
         <button
             type={type}
-            className={classes}
             disabled={disabled}
-            onClick={disabled ? undefined : onClick}
+            className={`${baseStyles} ${variantStyle} ${sizeStyle} ${className}`}
+            onClick={onClick}
             {...props}
         >
             {children}

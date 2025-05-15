@@ -1,12 +1,5 @@
-import { FirmalarHeader } from '../../components/firmalar/header';
-import { FirmalarFooter } from '../../components/firmalar/footer';
+import FirmalarLayoutClient from '../../components/firmalar/FirmalarLayoutClient';
 
 export default function FirmalarLayout({ children }) {
-    return (
-        <>
-            <FirmalarHeader />
-            {children}
-            <FirmalarFooter />
-        </>
-    );
+    return <FirmalarLayoutClient>{children}</FirmalarLayoutClient>;
 } 

@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/app/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Edit, UserCheck, MapPin, Phone, Mail } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Loader2, Edit, UserCheck, MapPin, Phone, Mail, X, Download, ExternalLink, Plus } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import turkiyeIlIlce from '@/data/turkiye-il-ilce';
+import { CallMeForm } from '@/components/ui/call-me-form';
 
 export default function FirmaProfilPage() {
     const router = useRouter();
@@ -33,8 +34,49 @@ export default function FirmaProfilPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [ilceler, setIlceler] = useState([]);
     const [fetchError, setFetchError] = useState(null);
-    const [musteriler, setMusteriler] = useState([]);
-    const [musterilerLoading, setMusterilerLoading] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    // Mock veriler
+    const mockTeklifler = [
+        { id: 1, musteri: "Ahmet Yılmaz", tarih: "12.08.2023", durum: "Beklemede", tutar: 12500 },
+        { id: 2, musteri: "Zeynep Kaya", tarih: "05.09.2023", durum: "Onaylandı", tutar: 15800 },
+        { id: 3, musteri: "Mehmet Demir", tarih: "18.09.2023", durum: "İptal Edildi", tutar: 8750 },
+        { id: 4, musteri: "Ayşe Çelik", tarih: "22.09.2023", durum: "Beklemede", tutar: 22000 },
+        { id: 5, musteri: "Fatma Şahin", tarih: "01.10.2023", durum: "Onaylandı", tutar: 18500 }
+    ];
+
+    const mockRezervasyon = [
+        { id: 1, musteri: "Ali Veli", tarih: "15.11.2023", misafirSayisi: 250, odemeDurumu: "Kapora Alındı", tutar: 35000 },
+        { id: 2, musteri: "Hande Doğan", tarih: "22.12.2023", misafirSayisi: 120, odemeDurumu: "Tamamı Ödendi", tutar: 22000 },
+        { id: 3, musteri: "Serkan Öz", tarih: "05.01.2024", misafirSayisi: 180, odemeDurumu: "Kapora Alındı", tutar: 28500 },
+        { id: 4, musteri: "Ece Güneş", tarih: "14.02.2024", misafirSayisi: 300, odemeDurumu: "Beklemede", tutar: 42000 }
+    ];
+
+    const mockRandevular = [
+        { id: 1, musteri: "Selin Öztürk", tarih: "08.10.2023", saat: "14:30", amac: "Mekan Görüşmesi", durum: "Tamamlandı" },
+        { id: 2, musteri: "Hakan Demirci", tarih: "12.10.2023", saat: "11:00", amac: "Menü Tadımı", durum: "Beklemede" },
+        { id: 3, musteri: "Nihan Aktaş", tarih: "15.10.2023", saat: "16:00", amac: "Fiyat Görüşmesi", durum: "Beklemede" },
+        { id: 4, musteri: "Berk Yıldız", tarih: "18.10.2023", saat: "10:30", amac: "Dekorasyon Planlaması", durum: "İptal Edildi" }
+    ];
+
+    const mockSorular = [
+        { id: 1, musteri: "Ceyda Kılıç", tarih: "01.10.2023", soru: "Düğün tarihini değiştirmek istiyoruz, ne yapmamız gerekiyor?", cevap: "Merhaba, en az 1 ay önceden bildirmeniz durumunda tarih değişikliği yapabiliriz." },
+        { id: 2, musteri: "Emre Aydın", tarih: "03.10.2023", soru: "Vejetaryen misafirlerimiz için özel menü seçeneğiniz var mı?", cevap: null },
+        { id: 3, musteri: "Pınar Yücel", tarih: "04.10.2023", soru: "Düğün fotoğrafçısı ve kameraman için ekstra ücret ödememiz gerekiyor mu?", cevap: "Tüm paketlerimizde fotoğrafçı ve kameraman hizmeti dahildir, ekstra ücret ödemenize gerek yok." },
+        { id: 4, musteri: "Kaan Işık", tarih: "05.10.2023", soru: "Davet salonunun maksimum kapasitesi nedir?", cevap: "Ana salonumuz 400 kişi kapasitesine sahiptir." }
+    ];
+
+    const mockYorumlar = [
+        { id: 1, musteri: "Deniz & Murat", tarih: "25.08.2023", puan: 5, yorum: "Harika bir düğün oldu, herşey için çok teşekkürler!" },
+        { id: 2, musteri: "Sevgi & Onur", tarih: "12.09.2023", puan: 4, yorum: "Yemekler muhteşemdi, organizasyon çok başarılıydı. Daha iyi olabilecek tek şey parkın biraz daha geniş olması olabilirdi." },
+        { id: 3, musteri: "Elif & Burak", tarih: "18.09.2023", puan: 3, yorum: "Mekan çok güzeldi fakat hizmet konusunda biraz geç kalındı." },
+        { id: 4, musteri: "Gamze & Alper", tarih: "30.09.2023", puan: 5, yorum: "Hayalimizdeki düğünü gerçekleştirdik, herşey kusursuzdu!" }
+    ];
+
+    const mockStories = [
+        { id: 1, cift: "Merve & Can", tarih: "05.08.2023", hikaye: "2 yıllık bir ilişkinin ardından Can'ın sürpriz evlilik teklifi ile nişanlandık. Tekliften 6 ay sonra ise muhteşem bir düğünle hayatımızı birleştirdik.", fotograflar: ["/images/person-1.webp", "/images/person-2.webp", "/images/person-3.jpg"] },
+        { id: 2, cift: "Zeynep & Arda", tarih: "15.09.2023", hikaye: "Üniversitede tanıştık ve 5 yıl boyunca ayrı şehirlerde yaşadıktan sonra nihayet hayatlarımızı birleştirdik.", fotograflar: ["/images/person-4.jpg", "/images/person-3.jpg"] }
+    ];
 
     // İl değiştiğinde ilçeleri güncelle
     useEffect(() => {
@@ -81,7 +123,6 @@ export default function FirmaProfilPage() {
         }
 
         fetchFirmaProfil();
-        fetchMusteriler();
     }, [user]);
 
     const fetchFirmaProfil = async () => {
@@ -91,77 +132,85 @@ export default function FirmaProfilPage() {
         setFetchError(null);
 
         try {
-            // Profiles tablosundan veri çek
-            const { data, error } = await supabase
+            // Önce businesses tablosundan veri çekmeyi deneyelim
+            const { data: businessData, error: businessError } = await supabase
+                .from('businesses')
+                .select('*')
+                .eq('owner_id', user.id)
+                .single();
+
+            if (!businessError && businessData) {
+                // İşletme verileri başarıyla alındı
+                setFirmaProfil({
+                    firma_adi: businessData.name || '',
+                    email: businessData.email || user.email || '',
+                    telefon: businessData.phone || '',
+                    website: businessData.website || '',
+                    adres: businessData.address || '',
+                    il_id: businessData.city_id || null,
+                    il_adi: businessData.city_name || '',
+                    ilce_id: businessData.district_id || null,
+                    ilce_adi: businessData.district_name || '',
+                    aciklama: businessData.description || '',
+                    kapasite: businessData.capacity || '',
+                    ozellikler: businessData.features || []
+                });
+                return; // Veri başarıyla alındı, fonksiyonu sonlandır
+            }
+
+            // İşletme verisi yoksa veya hata varsa profiles tablosundan almayı dene
+            const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single();
 
-            if (error) {
-                throw error;
+            if (profileError) {
+                // Eğer gerçek bir veri hatası varsa (not found hariç)
+                if (profileError.code !== 'PGRST116') {
+                    console.error('Profil veri hatası:', profileError);
+                    throw profileError;
+                }
             }
 
-            if (data) {
-                // Hem auth metadata hem de profiles tablosundan veri birleştir
+            // Profil verileri başarıyla alındıysa kullan
+            if (profileData) {
                 setFirmaProfil({
-                    firma_adi: data.full_name || user.user_metadata?.full_name || '',
-                    email: data.email || user.email || '',
-                    telefon: data.phone || user.user_metadata?.phone || '',
-                    website: data.website || user.user_metadata?.website || '',
-                    adres: data.adres || user.user_metadata?.adres || '',
-                    il_id: data.city_id || user.user_metadata?.city_id || null,
-                    il_adi: data.city_name || user.user_metadata?.city_name || '',
-                    ilce_id: data.district_id || user.user_metadata?.district_id || null,
-                    ilce_adi: data.district_name || user.user_metadata?.district_name || '',
-                    aciklama: data.aciklama || user.user_metadata?.aciklama || '',
+                    firma_adi: profileData.full_name || user.user_metadata?.full_name || '',
+                    email: profileData.email || user.email || '',
+                    telefon: profileData.phone || user.user_metadata?.phone || '',
+                    website: profileData.website || user.user_metadata?.website || '',
+                    adres: profileData.address || user.user_metadata?.address || '',
+                    il_id: profileData.city_id || user.user_metadata?.city_id || null,
+                    il_adi: profileData.city_name || user.user_metadata?.city_name || '',
+                    ilce_id: profileData.district_id || user.user_metadata?.district_id || null,
+                    ilce_adi: profileData.district_name || user.user_metadata?.district_name || '',
+                    aciklama: profileData.description || user.user_metadata?.description || '',
                 });
-            } else {
-                setFirmaProfil({
-                    firma_adi: user.user_metadata?.full_name || '',
-                    email: user.email || '',
-                    telefon: user.user_metadata?.phone || '',
-                    website: user.user_metadata?.website || '',
-                    adres: user.user_metadata?.adres || '',
-                    il_id: user.user_metadata?.city_id || null,
-                    il_adi: user.user_metadata?.city_name || '',
-                    ilce_id: user.user_metadata?.district_id || null,
-                    ilce_adi: user.user_metadata?.district_name || '',
-                    aciklama: user.user_metadata?.aciklama || '',
-                });
+                return;
             }
+
+            // Hiçbir yerden veri alınamadıysa, user metadata'sını kullan
+            setFirmaProfil({
+                firma_adi: user.user_metadata?.full_name || '',
+                email: user.email || '',
+                telefon: user.user_metadata?.phone || '',
+                website: user.user_metadata?.website || '',
+                adres: user.user_metadata?.address || '',
+                il_id: user.user_metadata?.city_id || null,
+                il_adi: user.user_metadata?.city_name || '',
+                ilce_id: user.user_metadata?.district_id || null,
+                ilce_adi: user.user_metadata?.district_name || '',
+                aciklama: user.user_metadata?.description || '',
+            });
         } catch (error) {
             console.error('Firma profil verisi çekme hatası:', error);
-            setFetchError('Profil bilgileri yüklenirken bir hata oluştu.');
+            setFetchError('Profil bilgileri yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
         } finally {
             setFetchLoading(false);
         }
     };
 
-    const fetchMusteriler = async () => {
-        if (!user) return;
-
-        setMusterilerLoading(true);
-
-        try {
-            // Shared_profiles view'dan müşteri verilerini çek
-            const { data, error } = await supabase
-                .from('shared_profiles')
-                .select('*')
-                .eq('user_type', 'user');
-
-            if (error) {
-                throw error;
-            }
-
-            setMusteriler(data || []);
-        } catch (error) {
-            console.error('Müşteri verisi çekme hatası:', error);
-            toast.error('Müşteri bilgileri yüklenirken bir hata oluştu.');
-        } finally {
-            setMusterilerLoading(false);
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -256,6 +305,11 @@ export default function FirmaProfilPage() {
         }
     };
 
+    const handleCallMeSuccess = (formData) => {
+        console.log('Form bilgileri:', formData);
+        toast.success('Geri arama talebiniz alındı!');
+    };
+
     // Kullanıcı giriş yapmamışsa veya firma hesabı değilse
     if (!user || !isCompanyAccount()) {
         return (
@@ -284,7 +338,7 @@ export default function FirmaProfilPage() {
         <Layout>
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold">Firma Kontrol Paneli</h1>
+                    <h1 className="text-2xl font-bold">Firma Paneli</h1>
                     <Button onClick={handleSignOut} variant="outline">Çıkış Yap</Button>
                 </div>
 
@@ -294,9 +348,14 @@ export default function FirmaProfilPage() {
                     </div>
                 ) : (
                     <Tabs defaultValue="profil">
-                        <TabsList className="mb-8">
-                            <TabsTrigger value="profil">Firma Profili</TabsTrigger>
-                            <TabsTrigger value="musteriler">Müşteri Bilgileri</TabsTrigger>
+                        <TabsList className="mb-8 flex flex-wrap gap-2">
+                            <TabsTrigger value="profil">Firma Bilgileri</TabsTrigger>
+                            <TabsTrigger value="teklifler">Teklifler</TabsTrigger>
+                            <TabsTrigger value="rezervasyonlar">Rezervasyonlar</TabsTrigger>
+                            <TabsTrigger value="randevular">Randevular</TabsTrigger>
+                            <TabsTrigger value="sorucevap">Soru-Cevap</TabsTrigger>
+                            <TabsTrigger value="yorumlar">Yorumlar</TabsTrigger>
+                            <TabsTrigger value="stories">Nişan Hikayeleri</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="profil" className="bg-white rounded-lg shadow-sm p-6">
@@ -551,74 +610,378 @@ export default function FirmaProfilPage() {
                             )}
                         </TabsContent>
 
-                        <TabsContent value="musteriler" className="bg-white rounded-lg shadow-sm p-6">
+                        <TabsContent value="teklifler" className="bg-white rounded-lg shadow-sm p-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-semibold">Müşteri Bilgileri</h2>
-                                <Button
-                                    onClick={fetchMusteriler}
-                                    variant="outline"
-                                    disabled={musterilerLoading}
-                                >
-                                    {musterilerLoading ? (
-                                        <Loader2 size={16} className="mr-2 animate-spin" />
-                                    ) : (
-                                        <><UserCheck size={16} className="mr-2" /> Yenile</>
-                                    )}
+                                <h2 className="text-xl font-semibold">Teklifler</h2>
+                                <Button variant="outline" className="flex items-center gap-1">
+                                    <Download size={16} />
+                                    Dışa Aktar
                                 </Button>
                             </div>
 
-                            {musterilerLoading ? (
-                                <div className="flex justify-center items-center py-12">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                </div>
-                            ) : musteriler.length === 0 ? (
-                                <div className="text-center py-12 bg-gray-50 rounded-md">
-                                    <p className="text-gray-500">Henüz sistemde müşteri bulunmamaktadır.</p>
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Ad Soyad
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Telefon
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    İl
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    İlçe
-                                                </th>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Müşteri
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tarih
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Durum
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tutar
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                İşlemler
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {mockTeklifler.map((teklif) => (
+                                            <tr key={teklif.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">{teklif.musteri}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-500">{teklif.tarih}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${teklif.durum === "Onaylandı" ? "bg-green-100 text-green-800" :
+                                                        teklif.durum === "Beklemede" ? "bg-yellow-100 text-yellow-800" :
+                                                            "bg-red-100 text-red-800"
+                                                        }`}>
+                                                        {teklif.durum}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {teklif.tutar.toLocaleString('tr-TR')} ₺
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <Button variant="ghost" size="sm">Detay</Button>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {musteriler.map((musteri) => (
-                                                <tr key={musteri.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900">{musteri.full_name}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-500">{musteri.phone || '-'}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-500">{musteri.city_name || '-'}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-500">{musteri.district_name || '-'}</div>
-                                                    </td>
-                                                </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {mockTeklifler.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz teklif bulunmamaktadır.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="rezervasyonlar" className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Rezervasyonlar</h2>
+                                <Button variant="outline" className="flex items-center gap-1">
+                                    <Download size={16} />
+                                    Dışa Aktar
+                                </Button>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Müşteri
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tarih
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Misafir Sayısı
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Ödeme Durumu
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tutar
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                İşlemler
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {mockRezervasyon.map((rezervasyon) => (
+                                            <tr key={rezervasyon.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">{rezervasyon.musteri}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-500">{rezervasyon.tarih}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {rezervasyon.misafirSayisi}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${rezervasyon.odemeDurumu === "Tamamı Ödendi" ? "bg-green-100 text-green-800" :
+                                                        rezervasyon.odemeDurumu === "Kapora Alındı" ? "bg-yellow-100 text-yellow-800" :
+                                                            "bg-gray-100 text-gray-800"
+                                                        }`}>
+                                                        {rezervasyon.odemeDurumu}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {rezervasyon.tutar.toLocaleString('tr-TR')} ₺
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <Button variant="ghost" size="sm">Detay</Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {mockRezervasyon.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz rezervasyon bulunmamaktadır.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="randevular" className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Randevular</h2>
+                                <Button variant="outline" className="flex items-center gap-1">
+                                    <Plus size={16} />
+                                    Yeni Randevu
+                                </Button>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Müşteri
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tarih
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Saat
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Amaç
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Durum
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                İşlemler
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {mockRandevular.map((randevu) => (
+                                            <tr key={randevu.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">{randevu.musteri}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-500">{randevu.tarih}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-500">{randevu.saat}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-500">{randevu.amac}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${randevu.durum === "Tamamlandı" ? "bg-green-100 text-green-800" :
+                                                        randevu.durum === "Beklemede" ? "bg-yellow-100 text-yellow-800" :
+                                                            "bg-red-100 text-red-800"
+                                                        }`}>
+                                                        {randevu.durum}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <Button variant="ghost" size="sm">Düzenle</Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {mockRandevular.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz randevu bulunmamaktadır.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="sorucevap" className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Soru & Cevaplar</h2>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" className="flex items-center gap-1">
+                                        <Download size={16} />
+                                        Dışa Aktar
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {mockSorular.map((soru) => (
+                                    <div key={soru.id} className="border rounded-lg p-4">
+                                        <div className="flex justify-between">
+                                            <div className="font-medium">{soru.musteri}</div>
+                                            <div className="text-sm text-gray-500">{soru.tarih}</div>
+                                        </div>
+                                        <div className="mt-2 bg-gray-50 p-3 rounded-md">
+                                            <p className="font-medium text-gray-800">{soru.soru}</p>
+                                        </div>
+
+                                        {soru.cevap ? (
+                                            <div className="mt-3 ml-4 border-l-2 border-primary pl-3">
+                                                <p className="text-sm font-medium text-gray-500 mb-1">Cevabınız:</p>
+                                                <p>{soru.cevap}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-3">
+                                                <textarea
+                                                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-primary focus:border-primary"
+                                                    rows="2"
+                                                    placeholder="Bu soruyu yanıtlayın..."
+                                                ></textarea>
+                                                <div className="mt-2 flex justify-end">
+                                                    <Button size="sm">Yanıtla</Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {mockSorular.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz soru bulunmamaktadır.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="yorumlar" className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Müşteri Yorumları</h2>
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-yellow-50 text-yellow-700 font-medium px-3 py-1 rounded-md flex items-center">
+                                        <span>Ortalama Puan: </span>
+                                        <span className="ml-1 text-lg">
+                                            {mockYorumlar.length > 0
+                                                ? (mockYorumlar.reduce((total, yorum) => total + yorum.puan, 0) / mockYorumlar.length).toFixed(1)
+                                                : 0}
+                                        </span>
+                                        <span className="ml-1 text-yellow-500">★</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {mockYorumlar.map((yorum) => (
+                                    <div key={yorum.id} className="border rounded-lg p-4">
+                                        <div className="flex justify-between">
+                                            <div className="font-medium">{yorum.musteri}</div>
+                                            <div className="text-sm text-gray-500">{yorum.tarih}</div>
+                                        </div>
+                                        <div className="flex items-center mt-1">
+                                            {[...Array(5)].map((_, index) => (
+                                                <span
+                                                    key={index}
+                                                    className={`text-xl ${index < yorum.puan ? 'text-yellow-500' : 'text-gray-300'}`}
+                                                >
+                                                    ★
+                                                </span>
                                             ))}
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                        <p className="mt-2">{yorum.yorum}</p>
+
+                                        <div className="mt-3 flex justify-end gap-2">
+                                            <Button variant="outline" size="sm">Yanıtla</Button>
+                                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+                                                <X size={16} />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {mockYorumlar.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz yorum bulunmamaktadır.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="stories" className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Nişan Hikayeleri</h2>
+                                <Button variant="outline" className="flex items-center gap-1">
+                                    <Plus size={16} />
+                                    Yeni Hikaye Ekle
+                                </Button>
+                            </div>
+
+                            <div className="space-y-8">
+                                {mockStories.map((story) => (
+                                    <div key={story.id} className="border rounded-lg overflow-hidden">
+                                        <div className="p-4">
+                                            <div className="flex justify-between">
+                                                <h3 className="text-lg font-medium text-primary">{story.cift}</h3>
+                                                <div className="text-sm text-gray-500">{story.tarih}</div>
+                                            </div>
+                                            <p className="mt-2">{story.hikaye}</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-4 bg-gray-50">
+                                            {story.fotograflar.map((foto, index) => (
+                                                <div key={index} className="relative h-48 rounded-md overflow-hidden">
+                                                    <Image
+                                                        src={foto}
+                                                        alt={`${story.cift} fotoğraf ${index + 1}`}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="p-4 flex justify-end gap-2">
+                                            <Button variant="outline" size="sm">Düzenle</Button>
+                                            <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700 hover:border-red-500">
+                                                Kaldır
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {mockStories.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Henüz nişan hikayesi bulunmamaktadır.</p>
                                 </div>
                             )}
                         </TabsContent>
                     </Tabs>
                 )}
             </div>
+
+            <CallMeForm
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSuccess={handleCallMeSuccess}
+            />
+
+            <Toaster position="top-right" />
         </Layout>
     );
 } 

@@ -34,7 +34,7 @@ export function Tabs({ defaultValue, children }) {
     );
 }
 
-export function TabsList({ activeTab, setActiveTab, children }) {
+export function TabsList({ activeTab, setActiveTab, children, className }) {
     // TabsTrigger bileşenlerini aktif sekme bilgisiyle güncelleme
     const triggers = React.Children.map(children, (child) => {
         if (child.type === TabsTrigger) {
@@ -46,7 +46,7 @@ export function TabsList({ activeTab, setActiveTab, children }) {
         return child;
     });
 
-    return <div className="flex space-x-2 border-b border-gray-200">{triggers}</div>;
+    return <div className={`flex flex-wrap gap-1 border-b border-gray-200 ${className || ''}`}>{triggers}</div>;
 }
 
 export function TabsTrigger({ value, isActive, onSelect, children }) {

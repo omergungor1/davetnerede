@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import turkiyeIlIlce from '../../data/turkiye-il-ilce';
-import { formatPhoneNumber } from '@/components/ui/utils';
+import { CallMeForm } from '@/components/ui/call-me-form';
 
 export default function FirmalarIcin() {
     const [formData, setFormData] = useState({
@@ -27,6 +27,8 @@ export default function FirmalarIcin() {
     const faqRefs = useRef([]);
 
     const [ilceler, setIlceler] = useState([]);
+
+    const [modalOpen, setModalOpen] = useState(false);
 
     // İl değiştiğinde ilçeleri güncelle
     useEffect(() => {
@@ -155,6 +157,11 @@ export default function FirmalarIcin() {
         }
     ];
 
+    const handleCallMeSuccess = (formData) => {
+        console.log('Form bilgileri:', formData);
+        // Burada form bilgileriyle ilgili işlemler yapılabilir
+    };
+
     return (
         <main className="bg-white">
             {/* Hero Bölümü */}
@@ -169,7 +176,7 @@ export default function FirmalarIcin() {
                                 Yüzlerce çiftin hayallerindeki söz,nişan için aradığı salon ve hizmetleri sağlayan işletmeler arasında yerinizi alın.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start">
-                                <Button href="#iletisim-formu" size="lg" className="text-sm md:text-base w-full sm:w-auto">
+                                <Button href="/firmalar-icin/kayit" size="lg" className="text-sm md:text-base w-full sm:w-auto">
                                     Hemen Ücretsiz Üye Olun
                                 </Button>
                                 <Button href="#avantajlar" variant="outline" size="lg" className="text-sm md:text-base w-full sm:w-auto mt-3 sm:mt-0">
@@ -366,165 +373,17 @@ export default function FirmalarIcin() {
             {/* İletişim Formu */}
             <section id="iletisim-formu" className="py-16 bg-white">
                 <div className="container mx-auto px-4">
-                    <div ref={formRef} className="max-w-3xl mx-auto border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all">
-                        <button
-                            onClick={toggleForm}
-                            className="w-full px-6 py-5 bg-white hover:bg-primary/5 flex justify-between items-center transition-colors focus:outline-none"
-                            aria-expanded={isFormOpen}
-                            aria-controls="contact-form-panel"
-                        >
-                            <div className="flex flex-col w-full">
-                                <h2 className="text-xl md:text-2xl font-bold text-text">Sizi Arayalım</h2>
-                                <p className="text-darkgray text-sm mt-1">Bilgilerinizi bırakın, danışmanlarımız sizinle iletişime geçsin</p>
-                            </div>
-                            <div className={`text-primary transition-transform duration-300 ${isFormOpen ? 'rotate-180' : ''}`}>
-                                <ChevronDown size={24} />
-                            </div>
-                        </button>
-
-                        <div
-                            id="contact-form-panel"
-                            className={`transition-all duration-500 ease-in-out overflow-hidden ${isFormOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
-                                }`}
-                        >
-                            <div className="p-4 sm:p-6 border-t border-border bg-white/50">
-                                {formSubmitted ? (
-                                    <div className="py-8 text-center">
-                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Talebiniz Alındı!</h3>
-                                        <p className="text-sm text-gray-500">
-                                            Ekibimiz en kısa sürede sizinle iletişime geçecektir.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleSubmit} className="space-y-5">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label htmlFor="ad" className="block text-sm font-medium text-text mb-1">Ad Soyad</label>
-                                                <input
-                                                    type="text"
-                                                    id="ad"
-                                                    name="ad"
-                                                    value={formData.ad}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label htmlFor="firma" className="block text-sm font-medium text-text mb-1">Firma Adı</label>
-                                                <input
-                                                    type="text"
-                                                    id="firma"
-                                                    name="firma"
-                                                    value={formData.firma}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label htmlFor="telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
-                                                <input
-                                                    type="tel"
-                                                    id="telefon"
-                                                    name="telefon"
-                                                    value={formatPhoneNumber(formData.telefon)}
-                                                    placeholder="05XX XXX XX XX"
-                                                    maxLength={14}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label htmlFor="email" className="block text-sm font-medium text-text mb-1">E-posta Adresi</label>
-                                                <input
-                                                    type="email"
-                                                    id="email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                />
-                                            </div>
-
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label htmlFor="sehir" className="block text-sm font-medium text-text mb-1">İl</label>
-                                                <select
-                                                    id="sehir"
-                                                    name="sehir"
-                                                    value={formData.sehir}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    {turkiyeIlIlce.provinces.sort((a, b) =>
-                                                        a.name.localeCompare(b.name, 'tr')
-                                                    ).map(province => (
-                                                        <option key={province.id} value={province.name}>
-                                                            {province.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label htmlFor="ilce" className="block text-sm font-medium text-text mb-1">İlçe</label>
-                                                <select
-                                                    id="ilce"
-                                                    name="ilce"
-                                                    value={formData.ilce}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                    disabled={!formData.sehir}
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    {ilceler.map(district => (
-                                                        <option key={district.id} value={district.name}>
-                                                            {district.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="mesaj" className="block text-sm font-medium text-text mb-1">Mesajınız (İsteğe Bağlı)</label>
-                                            <textarea
-                                                id="mesaj"
-                                                name="mesaj"
-                                                value={formData.mesaj}
-                                                onChange={handleChange}
-                                                rows="4"
-                                                className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            ></textarea>
-                                        </div>
-
-                                        <div className="pt-2">
-                                            <Button type="submit" size="lg" className="w-full">
-                                                Kaydınızı Tamamlayın
-                                            </Button>
-                                        </div>
-                                    </form>
-                                )}
-                            </div>
-                        </div>
+                    <div className="flex flex-col w-full mb-6">
+                        <h2 className="text-xl md:text-2xl font-bold text-text">Sizi Arayalım</h2>
+                        <p className="text-darkgray text-sm mt-1">Bilgilerinizi bırakın, danışmanlarımız sizinle iletişime geçsin</p>
                     </div>
+                    <Button
+                        onClick={() => setModalOpen(true)}
+                        variant="outline"
+                        className="text-xs sm:text-sm border-primary text-primary hover:bg-primary hover:text-white px-2 sm:px-4 py-1 sm:py-2 w-28 sm:w-32 h-8 sm:h-10 flex justify-center items-center"
+                    >
+                        Sizi Arayalım
+                    </Button>
                 </div>
             </section>
 
@@ -575,17 +434,26 @@ export default function FirmalarIcin() {
                     <div className="flex flex-col sm:flex-row items-center justify-between bg-primary/5 rounded-lg p-5 md:p-8 border border-primary/20">
                         <div className="mb-5 sm:mb-0 sm:mr-6 text-center sm:text-left">
                             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2">Sorunuz mu var?</h2>
-                            <p className="text-darkgray text-sm sm:text-base">Merak ettiğiniz bir konu varsa hemen iletişime geçin, sizi arayalım.</p>
+                            <p className="text-darkgray text-sm sm:text-base">Merak ettiğiniz bir konu varsa sizi arayalım.</p>
                         </div>
-                        <Link href="tel:+902126444782" className="inline-flex items-center px-5 py-2 sm:px-6 sm:py-3 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors text-sm sm:text-base">
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                            </svg>
-                            0212 644 47 82
-                        </Link>
+                        <Button
+                            onClick={() => setModalOpen(true)}
+                            variant="outline"
+                            className="text-xs sm:text-sm border-primary text-primary hover:bg-primary hover:text-white px-2 sm:px-4 py-1 sm:py-2 w-28 sm:w-32 h-8 sm:h-10 flex justify-center items-center"
+                        >
+                            Sizi Arayalım
+                        </Button>
                     </div>
                 </div>
             </section>
+
+
+            {/* Sizi Arayalım Modal Komponenti */}
+            <CallMeForm
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSuccess={handleCallMeSuccess}
+            />
         </main>
     );
 } 

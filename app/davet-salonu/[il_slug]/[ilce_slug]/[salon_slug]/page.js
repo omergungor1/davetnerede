@@ -496,8 +496,9 @@ export default function VenueDetail({ params }) {
                 {/* Breadcrumb */}
                 <div className="text-sm text-darkgray mb-4">
                     <a href="/" className="hover:text-primary">Anasayfa</a> {' > '}
-                    <a href="/salonlar" className="hover:text-primary">Düğün Mekanları</a> {' > '}
-                    <a href="/salonlar/istanbul" className="hover:text-primary">İstanbul</a> {' > '}
+                    <a href="/davet-salonu" className="hover:text-primary">Davet Salonu</a> {' > '}
+                    <a href="/davet-salonu/istanbul" className="hover:text-primary">İstanbul</a> {' > '}
+                    <a href="/davet-salonu/istanbul/besiktas" className="hover:text-primary">Beşiktaş</a> {' > '}
                     <span className="text-primary">{venue.name}</span>
                 </div>
 
