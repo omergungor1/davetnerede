@@ -5,25 +5,28 @@ import React from 'react';
 export function Tabs({ defaultValue, children }) {
     const [activeTab, setActiveTab] = React.useState(defaultValue);
 
+    // Geçerli çocuk bileşenleri filtrele ve React.Fragment'ları işle
+    const validChildren = React.Children.toArray(children).filter(
+        child => React.isValidElement(child)
+    );
+
     // Tab değerlerini çocuk bileşenlerden alın
-    const tabsContent = React.Children.map(children, (child) => {
-        if (child.type === TabsContent) {
-            return React.cloneElement(child, {
-                isActive: child.props.value === activeTab,
-            });
-        }
-        return child;
+    const tabsContent = validChildren.filter(
+        child => child.type === TabsContent
+    ).map(child => {
+        return React.cloneElement(child, {
+            isActive: child.props.value === activeTab
+        });
     });
 
     // TabsList bileşenini aktif sekme bilgisiyle güncelleme
-    const tabsList = React.Children.map(children, (child) => {
-        if (child.type === TabsList) {
-            return React.cloneElement(child, {
-                activeTab,
-                setActiveTab,
-            });
-        }
-        return child;
+    const tabsList = validChildren.filter(
+        child => child.type === TabsList
+    ).map(child => {
+        return React.cloneElement(child, {
+            activeTab,
+            setActiveTab
+        });
     });
 
     return (
@@ -35,18 +38,32 @@ export function Tabs({ defaultValue, children }) {
 }
 
 export function TabsList({ activeTab, setActiveTab, children, className }) {
+    // Geçerli çocuk bileşenleri filtrele
+    const validChildren = React.Children.toArray(children).filter(
+        child => React.isValidElement(child)
+    );
+
     // TabsTrigger bileşenlerini aktif sekme bilgisiyle güncelleme
-    const triggers = React.Children.map(children, (child) => {
-        if (child.type === TabsTrigger) {
-            return React.cloneElement(child, {
-                isActive: child.props.value === activeTab,
-                onSelect: () => setActiveTab(child.props.value),
-            });
-        }
-        return child;
+    const triggers = validChildren.filter(
+        child => child.type === TabsTrigger
+    ).map(child => {
+        return React.cloneElement(child, {
+            isActive: child.props.value === activeTab,
+            onSelect: () => setActiveTab(child.props.value)
+        });
     });
 
-    return <div className={`flex flex-wrap gap-1 border-b border-gray-200 ${className || ''}`}>{triggers}</div>;
+    // Diğer çocukları da geçir (TabsTrigger olmayan)
+    const otherChildren = validChildren.filter(
+        child => child.type !== TabsTrigger
+    );
+
+    return (
+        <div className={`flex flex-wrap gap-1 border-b border-gray-200 ${className || ''}`}>
+            {triggers}
+            {otherChildren}
+        </div>
+    );
 }
 
 export function TabsTrigger({ value, isActive, onSelect, children }) {

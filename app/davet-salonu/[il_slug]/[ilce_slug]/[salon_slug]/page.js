@@ -1008,23 +1008,6 @@ export default function VenueDetail({ params }) {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Görüşme Konusu</label>
-                                                <select
-                                                    name="topic"
-                                                    value={randevuFormData.topic}
-                                                    onChange={handleRandevuChange}
-                                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                                    required
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    <option value="fiyat">Fiyat Bilgisi</option>
-                                                    <option value="mekan">Mekan Turu</option>
-                                                    <option value="paket">Paket Detayları</option>
-                                                    <option value="diger">Diğer</option>
-                                                </select>
-                                            </div>
-
-                                            <div>
                                                 <label className="block text-sm font-medium mb-1 text-text">Notlar</label>
                                                 <textarea
                                                     name="notes"

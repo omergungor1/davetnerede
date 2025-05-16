@@ -15,7 +15,7 @@ export default function FirmalarIcin() {
     // Eğer kullanıcı zaten giriş yapmış firma hesabı ise, firma profiline yönlendir
     useEffect(() => {
         if (user && isCompanyAccount()) {
-            router.push('/firma-profil');
+            router.push('/firmalar-icin/firma-profil');
         }
     }, [user, router]);
 

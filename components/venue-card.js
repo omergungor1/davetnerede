@@ -54,7 +54,7 @@ export function VenueCard({ venue }) {
                         images={images}
                         alt={venue.name}
                         height="h-52"
-                        link={`/dugun-mekanlari/${venue.id}`}
+                        link={`/davet-salonu/${venue.slug}`}
                     />
 
                     {venue.discount && (
@@ -70,7 +70,7 @@ export function VenueCard({ venue }) {
 
                 <div className="p-4">
                     <div className="flex items-start justify-between mb-2">
-                        <Link href={`/dugun-mekanlari/${venue.id}`} className="group">
+                        <Link href={`/davet-salonu/${venue.slug}`} className="group">
                             <h3 className="font-semibold text-text group-hover:text-primary">{venue.name}</h3>
                         </Link>
 

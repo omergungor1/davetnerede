@@ -8,12 +8,13 @@ export default function FirmalarLayoutClient({ children }) {
     const pathname = usePathname();
     const isRegisterPage = pathname === '/firmalar-icin/kayit';
     const isLoginPage = pathname === '/firmalar-icin/giris';
+    const isFirmaProfilPage = pathname === '/firmalar-icin/firma-profil';
 
     return (
         <>
-            {(!isRegisterPage && !isLoginPage) && <FirmalarHeader />}
+            {(!isRegisterPage && !isLoginPage && !isFirmaProfilPage) && <FirmalarHeader />}
             {children}
-            {(!isRegisterPage && !isLoginPage) && <FirmalarFooter />}
+            {(!isRegisterPage && !isLoginPage && !isFirmaProfilPage) && <FirmalarFooter />}
         </>
     );
 } 
