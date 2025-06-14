@@ -176,12 +176,16 @@ export default function FirmalarIcin() {
                                 Yüzlerce çiftin hayallerindeki söz,nişan için aradığı salon ve hizmetleri sağlayan işletmeler arasında yerinizi alın.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start">
-                                <Button href="/firmalar-icin/kayit" size="lg" className="text-sm md:text-base w-full sm:w-auto">
-                                    Hemen Ücretsiz Üye Olun
-                                </Button>
-                                <Button href="#avantajlar" variant="outline" size="lg" className="text-sm md:text-base w-full sm:w-auto mt-3 sm:mt-0">
-                                    Avantajlarımızı Görün
-                                </Button>
+                                <Link href="/firmalar-icin/kayit">
+                                    <Button size="lg" className="text-sm md:text-base w-full sm:w-auto">
+                                        Hemen Ücretsiz Üye Olun
+                                    </Button>
+                                </Link>
+                                <Link href="#avantajlar">
+                                    <Button variant="outline" size="lg" className="text-sm md:text-base w-full sm:w-auto mt-3 sm:mt-0">
+                                        Avantajlarımızı Görün
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                         <div className="w-full md:w-1/2 mt-6 md:mt-0">
@@ -347,12 +351,14 @@ export default function FirmalarIcin() {
                         <div className="w-full md:w-1/2 mb-8 md:mb-0">
                             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-center md:text-left">Yüzlerce İş Fırsatını Kaçırmayın!</h2>
                             <p className="text-base md:text-lg text-gray-300 mb-6 text-center md:text-left">
-                                Osmaniye, Ordu, Rize, Sakarya, Samsun, Siirt, Sinop, Sivas, Tekirdağ, Tokat, Trabzon, Tunceli, Şanlıurfa, Uşak, Van, Yozgat, Zonguldak, Aksaray, Bayburt, Karaman, Kırıkkale, Batman, Şırnak, Bartın ve Türkiye'nin tüm illerinden çiftler sizinle çalışmak için bekliyor.
+                                Türkiye'nin dört bir yanından evlenecek çiftler hayalindeki mekanı arıyor; Davet Evi Bul platformunda yerinizi alın, çiftler sizi zahmetsizce bulsun ve yüzlerce iş fırsatını kaçırmayın.
                             </p>
                             <div className="flex justify-center md:justify-start">
-                                <Button href="#iletisim-formu" variant="outline" size="lg" className="border-primary text-primary hover:bg-white hover:text-gray-900 text-sm md:text-base">
-                                    Hemen Katılın
-                                </Button>
+                                <Link href="/firmalar-icin/kayit">
+                                    <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-white hover:text-gray-900 text-sm md:text-base">
+                                        Hemen Katılın
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                         <div className="w-full md:w-1/2 flex justify-center mt-6 md:mt-0">

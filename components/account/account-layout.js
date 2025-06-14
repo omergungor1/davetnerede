@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/app/context/auth-context';
 import { Layout } from '@/components/layout';
-import { AccountTabs } from './account-tabs';
 import Link from 'next/link';
 
 export function AccountLayout({ children, title }) {
@@ -32,8 +31,6 @@ export function AccountLayout({ children, title }) {
         <Layout>
             <div className="container mx-auto p-4">
                 <div className="mx-auto max-w-4xl">
-                    <AccountTabs />
-
                     <div className="bg-white rounded-lg shadow-sm">
                         {title && <h2 className="text-xl font-semibold mb-6 pb-4 border-b border-gray-100">{title}</h2>}
                         {children}

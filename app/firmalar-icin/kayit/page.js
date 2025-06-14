@@ -31,7 +31,6 @@ export default function FirmaKayit() {
         // Temel bilgiler - Adım 1
         firma_adi: '',
         firma_sahibi: '',
-        tagline: '',
         aciklama: '',
 
         // İletişim bilgileri - Adım 2
@@ -327,7 +326,6 @@ export default function FirmaKayit() {
                     full_name: formData.firma_adi,
                     phone: formData.telefon,
                     owner: formData.firma_sahibi,
-                    tagline: formData.tagline,
                     description: formData.aciklama,
                     address: formData.adres,
                     location: formData.konum,
@@ -339,9 +337,10 @@ export default function FirmaKayit() {
                     features: formData.ozellikler,
                     services: formData.hizmetler,
                     packages: formData.paketler,
-                    team_members: formData.ekip_uyeleri
+                    team_members: formData.ekip_uyeleri,
+                    password: formData.sifre
                 },
-                'company' // Kullanıcı tipini company olarak belirt
+                'company'
             );
 
             if (error) {
@@ -369,7 +368,6 @@ export default function FirmaKayit() {
                         user_id: userId,
                         name: formData.firma_adi,
                         description: formData.aciklama,
-                        tagline: formData.tagline,
                         capacity: formData.kapasite,
                         phone: formData.telefon,
                         email: formData.email,
@@ -399,7 +397,7 @@ export default function FirmaKayit() {
                 }
 
                 setIsSubmitSuccess(true);
-                toast.success('Kayıt işlemi başarılı! Lütfen e-posta adresinizi kontrol ediniz.');
+                toast.success('Kayıt işlemi başarılı! Aramıza hoşgeldiniz.');
 
                 // Başarılı kayıt sonrası 5 saniye sonra giriş sayfasına yönlendir
                 setTimeout(() => {
@@ -441,7 +439,7 @@ export default function FirmaKayit() {
                             </div>
                             <h2 className="text-xl font-semibold mb-2">Kayıt İşlemi Başarılı!</h2>
                             <p className="text-gray-600 mb-4">
-                                E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen hesabınızı aktifleştirmek için e-postanızı kontrol edin.
+                                Davet Evi Bul ailesine hoşgeldiniz. Sizi aramızda görmekten çok güzel.
                             </p>
                             <p className="text-sm text-gray-500">
                                 Kısa süre içinde giriş sayfasına yönlendirileceksiniz...
@@ -516,22 +514,6 @@ export default function FirmaKayit() {
                                             {validationErrors.firma_sahibi && (
                                                 <p className="mt-1 text-xs text-red-600">{validationErrors.firma_sahibi}</p>
                                             )}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="tagline" className="block text-sm font-medium text-text mb-1">
-                                                Slogan
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="tagline"
-                                                name="tagline"
-                                                value={formData.tagline}
-                                                onChange={handleChange}
-                                                className="w-full border border-border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                disabled={loading}
-                                                placeholder="Örn: Hayallerinizi gerçeğe dönüştürüyoruz"
-                                            />
                                         </div>
 
                                         <div>

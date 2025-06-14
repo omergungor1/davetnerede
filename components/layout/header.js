@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { AuthModals } from '../auth/auth-modals';
 import { useLocation } from '../../app/context/location-context';
 import { useAuth } from '@/app/context/auth-context';
+import { useRouter, usePathname } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,8 +17,10 @@ export function Header() {
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const { location, setLocation } = useLocation();
-    const { user, signOut } = useAuth();
+    const { user, signOut, isCompanyAccount } = useAuth();
     const userMenuRef = useRef(null);
+    const router = useRouter();
+    const pathname = usePathname();
 
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
@@ -44,12 +48,7 @@ export function Header() {
     // Kullanıcı adını göstermek için
     const getUserDisplayName = () => {
         if (!user) return '';
-
-        const fullName = user.user_metadata?.full_name;
-        if (fullName) return fullName;
-
-        // E-posta adresinden ilk kısmı al
-        return user.email?.split('@')[0] || 'Kullanıcı';
+        return user.user_metadata?.full_name || user.email;
     };
 
     // Kullanıcı avatarı için
@@ -78,40 +77,31 @@ export function Header() {
     const handleSignOut = async () => {
         try {
             await signOut();
-            setUserMenuOpen(false);
+            router.push('/');
         } catch (error) {
             console.error('Çıkış hatası:', error);
+            toast.error('Çıkış yapılırken bir hata oluştu');
         }
     };
 
     // Menü dışına tıklandığında menüyü kapat
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        // Menüyü kapatmak için dışarı tıklamayı dinle
+        const handleClickOutside = (event) => {
+            if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target)) {
                 setUserMenuOpen(false);
             }
-        }
+        };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [userMenuOpen]);
 
-    // Seçilen konum bilgilerini hazırla
-    const hasLocation = location?.province || location?.district;
-    const displayLocation = hasLocation ?
-        (location.district ?
-            `${location.district}, ${location.province}` :
-            location.province) :
-        null;
-
-    // Konum bilgisini sıfırla
-    const resetLocation = () => {
-        setLocation({
-            province: null,
-            district: null
-        });
+    // Aktif menü öğesini belirlemek için yardımcı fonksiyon
+    const isActivePath = (path) => {
+        return pathname === path;
     };
 
     return (
@@ -132,20 +122,6 @@ export function Header() {
                             <Image src="/images/logo.png" alt="davetevibul logo" width={40} height={40} />
                             <span className="text-xl sm:text-2xl font-bold text-primary">Davet Evi Bul</span>
                         </Link>
-
-                        {/* Seçilen konum bilgisi */}
-                        {hasLocation && (
-                            <div className="hidden md:flex items-center ml-4 bg-primary/10 px-3 py-1 rounded-full">
-                                <MapPin size={16} className="text-primary mr-1" />
-                                <span className="text-sm font-medium text-primary">{displayLocation}</span>
-                                <button
-                                    onClick={resetLocation}
-                                    className="ml-2 text-primary hover:text-primary/80"
-                                >
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        )}
 
                         {/* Mobil Arama Butonu */}
                         <button
@@ -194,34 +170,95 @@ export function Header() {
                                                     <div className="font-medium">{getUserDisplayName()}</div>
                                                     <div className="text-gray-500 truncate">{user.email}</div>
                                                 </div>
-                                                <Link
-                                                    href="/hesabim/profil"
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    onClick={() => setUserMenuOpen(false)}
-                                                >
-                                                    Profil Bilgilerim
-                                                </Link>
-                                                <Link
-                                                    href="/hesabim/teklifler"
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    onClick={() => setUserMenuOpen(false)}
-                                                >
-                                                    Tekliflerim
-                                                </Link>
-                                                <Link
-                                                    href="/hesabim/randevular"
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    onClick={() => setUserMenuOpen(false)}
-                                                >
-                                                    Randevularım
-                                                </Link>
-                                                <Link
-                                                    href="/hesabim/rezervasyonlar"
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    onClick={() => setUserMenuOpen(false)}
-                                                >
-                                                    Rezervasyonlarım
-                                                </Link>
+
+                                                {isCompanyAccount() ? (
+                                                    // İşletme Hesabı Menüsü
+                                                    <>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Firma Bilgileri
+                                                        </Link>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil?tab=teklifler"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Teklifler
+                                                        </Link>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil?tab=rezervasyonlar"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Rezervasyonlar
+                                                        </Link>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil?tab=randevular"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Randevular
+                                                        </Link>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil?tab=sorucevap"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Soru-Cevap
+                                                        </Link>
+                                                        <Link
+                                                            href="/firmalar-icin/firma-profil?tab=yorumlar"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                            onClick={() => setUserMenuOpen(false)}
+                                                        >
+                                                            Yorumlar
+                                                        </Link>
+                                                    </>
+                                                ) : (
+                                                    // Normal Kullanıcı Menüsü
+                                                    <>
+                                                        <Link
+                                                            href="/"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Davet Evi Bul
+                                                        </Link>
+                                                        <Link
+                                                            href="/hesabim/profil"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/hesabim/profil') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Profil Bilgilerim
+                                                        </Link>
+                                                        <Link
+                                                            href="/hesabim/teklifler"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/hesabim/teklifler') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Tekliflerim
+                                                        </Link>
+                                                        <Link
+                                                            href="/hesabim/randevular"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/hesabim/randevular') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Randevularım
+                                                        </Link>
+                                                        <Link
+                                                            href="/hesabim/rezervasyonlar"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/hesabim/rezervasyonlar') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Rezervasyonlarım
+                                                        </Link>
+                                                        <Link
+                                                            href="/hesabim/favoriler"
+                                                            className={`block px-4 py-2 text-sm ${isActivePath('/hesabim/favoriler') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                                        >
+                                                            Favorilerim
+                                                        </Link>
+                                                    </>
+                                                )}
+
                                                 <button
                                                     onClick={handleSignOut}
                                                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 border-t border-gray-200"
@@ -236,26 +273,28 @@ export function Header() {
                                     )}
                                 </div>
                             ) : (
-                                <div className="flex items-center text-darkgray hover:text-primary px-2 md:px-3">
-                                    <button onClick={openLoginModal} id="login-button" className="hidden md:block text-sm font-medium mr-1">
-                                        GİRİŞ YAP
-                                    </button>
-                                    <span className="mx-1 text-darkgray hidden md:block">/</span>
-                                    <button onClick={openRegisterModal} id="register-button" className="hidden md:block text-sm font-medium">
-                                        ÜYE OL
-                                    </button>
-                                    <button onClick={openLoginModal} className="md:hidden">
-                                        <User size={20} />
-                                    </button>
-                                </div>
+                                <>
+                                    <div className="flex items-center text-darkgray hover:text-primary px-2 md:px-3">
+                                        <button onClick={openLoginModal} id="login-button" className="hidden md:block text-sm font-medium mr-1">
+                                            GİRİŞ YAP
+                                        </button>
+                                        <span className="mx-1 text-darkgray hidden md:block">/</span>
+                                        <button onClick={openRegisterModal} id="register-button" className="hidden md:block text-sm font-medium">
+                                            ÜYE OL
+                                        </button>
+                                        <button onClick={openLoginModal} className="md:hidden">
+                                            <User size={20} />
+                                        </button>
+                                    </div>
+                                    <Link
+                                        href="/firmalar-icin"
+                                        className="hidden md:block ml-2 md:ml-4 inline-flex items-center px-2 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium text-white bg-primary rounded hover:bg-primary/90"
+                                    >
+                                        Firmalar İçin
+                                    </Link>
+                                </>
                             )}
 
-                            <Link
-                                href="/firmalar-icin"
-                                className="hidden md:block ml-2 md:ml-4 inline-flex items-center px-2 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium text-white bg-primary rounded hover:bg-primary/90"
-                            >
-                                Firmalar İçin
-                            </Link>
                         </div>
                     </div>
                 </div>
@@ -279,18 +318,6 @@ export function Header() {
                 {/* Mobil Menü */}
                 <div className={`border-t border-border bg-white overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-112' : 'max-h-0'}`}>
                     <div className="container mx-auto px-4 py-2">
-                        {hasLocation && (
-                            <div className="flex items-center py-2 mb-2 border-b border-border">
-                                <MapPin size={16} className="text-primary mr-2" />
-                                <span className="text-sm font-medium text-primary">{displayLocation}</span>
-                                <button
-                                    onClick={resetLocation}
-                                    className="ml-auto text-primary hover:text-primary/80"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-                        )}
                         <nav className="flex flex-col">
                             <Link href="/davet-salonlari" className="py-2 text-text hover:text-primary">
                                 Davet Salonları
@@ -317,17 +344,35 @@ export function Header() {
                             <div className="pt-2 border-t border-border">
                                 {user ? (
                                     <>
-                                        <Link href="/hesabim/profil" className="py-2 text-text hover:text-primary block">
+                                        <Link
+                                            href="/hesabim/profil"
+                                            className={`py-2 block ${isActivePath('/hesabim/profil') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                        >
                                             Profil Bilgilerim
                                         </Link>
-                                        <Link href="/hesabim/teklifler" className="py-2 text-text hover:text-primary block">
+                                        <Link
+                                            href="/hesabim/teklifler"
+                                            className={`py-2 block ${isActivePath('/hesabim/teklifler') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                        >
                                             Tekliflerim
                                         </Link>
-                                        <Link href="/hesabim/randevularim" className="py-2 text-text hover:text-primary block">
+                                        <Link
+                                            href="/hesabim/randevular"
+                                            className={`py-2 block ${isActivePath('/hesabim/randevular') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                        >
                                             Randevularım
                                         </Link>
-                                        <Link href="/hesabim/rezervasyonlarim" className="py-2 text-text hover:text-primary block">
+                                        <Link
+                                            href="/hesabim/rezervasyonlar"
+                                            className={`py-2 block ${isActivePath('/hesabim/rezervasyonlar') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                        >
                                             Rezervasyonlarım
+                                        </Link>
+                                        <Link
+                                            href="/hesabim/favoriler"
+                                            className={`py-2 block ${isActivePath('/hesabim/favoriler') ? 'text-primary font-medium' : 'text-text hover:text-primary'}`}
+                                        >
+                                            Favorilerim
                                         </Link>
                                         <button
                                             onClick={handleSignOut}
@@ -348,38 +393,6 @@ export function Header() {
                                     </>
                                 )}
                             </div>
-                        </nav>
-                    </div>
-                </div>
-
-                {/* Alt Menü */}
-                <div className="border-t border-border bg-white">
-                    <div className="container mx-auto px-4">
-                        <nav className="hidden md:flex items-center overflow-x-auto hide-scrollbar py-2">
-                            <Link href="/salonlar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
-                                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 18H10V15C10 14.448 9.552 14 9 14H5C4.448 14 4 14.448 4 15V18H2V9.65L7 4.4L12 9.6V18ZM17 18H15V13C15 10.424 12.649 8 10 8H9.83L12 5.93L22 15.3V18H20V15C20 14.448 19.552 14 19 14H17C16.448 14 16 14.448 16 15V18H17Z" fill="currentColor" />
-                                </svg>
-                                Davet Evleri
-                            </Link>
-                            {/* <Link href="/rehber-yazilar" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
-                                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M19 5V19H5V5H19ZM20.1 3H3.9C3.4 3 3 3.4 3 3.9V20.1C3 20.5 3.4 21 3.9 21H20.1C20.5 21 21 20.5 21 20.1V3.9C21 3.4 20.5 3 20.1 3V3ZM14.5 11.5H16V13H14.5V16H13V13H11.5V11.5H13V9H14.5V11.5ZM9.5 11.5H8V9H11V12.5H9.5V11.5ZM8 16V14.5H11V16H8Z" fill="currentColor" />
-                                </svg>
-                                Rehber Yazılar
-                            </Link> */}
-                            <Link href="/nisan-hikayeleri" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
-                                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2L2 12H12V22L22 12H12V2ZM12 12V22L22 12H12Z" fill="currentColor" />
-                                </svg>
-                                Nişan Hikayeleri
-                            </Link>
-                            {/* <Link href="/indirimler" className="whitespace-nowrap mr-6 text-sm text-text hover:text-primary py-2 flex items-center">
-                                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M21.41 11.58L12.41 2.58C12.05 2.22 11.55 2 11 2H4C2.9 2 2 2.9 2 4V11C2 11.55 2.22 12.05 2.59 12.42L11.59 21.42C11.95 21.78 12.45 22 13 22C13.55 22 14.05 21.78 14.41 21.41L21.41 14.41C21.78 14.05 22 13.55 22 13C22 12.45 21.77 11.94 21.41 11.58ZM5.5 7C4.67 7 4 6.33 4 5.5C4 4.67 4.67 4 5.5 4C6.33 4 7 4.67 7 5.5C7 6.33 6.33 7 5.5 7Z" fill="currentColor" />
-                                </svg>
-                                İndirimler
-                            </Link> */}
                         </nav>
                     </div>
                 </div>

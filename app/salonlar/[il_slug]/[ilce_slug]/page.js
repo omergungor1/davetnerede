@@ -100,10 +100,6 @@ export default function DistrictPage({ params }) {
     const unwrappedParams = React.use(params);
 
     useEffect(() => {
-        console.log('Aranıyor:', {
-            il_slug: unwrappedParams.il_slug,
-            ilce_slug: unwrappedParams.ilce_slug
-        });
 
         // il_slug'dan il adını oluştur
         const normalizedProvinceSlug = (unwrappedParams.il_slug || '').toLocaleLowerCase('tr-TR').trim();

@@ -34,10 +34,9 @@ export default function TekliflerPage() {
                         id: 1,
                         firma_adi: 'Hayal Düğün Salonu',
                         tarih: '15.06.2024',
-                        fiyat: '15.000 TL',
+                        fiyat: null,
                         durum: 'beklemede',
                         detay: 'Düğün paketi - 150 kişilik',
-                        mesaj: 'Size özel hafta içi indirimimizden yararlanabilirsiniz.',
                         tarih_created: '10.01.2024'
                     },
                     {
@@ -45,9 +44,8 @@ export default function TekliflerPage() {
                         firma_adi: 'Elit Organizasyon',
                         tarih: '22.07.2024',
                         fiyat: '25.000 TL',
-                        durum: 'onaylandi',
+                        durum: 'yanitlandi',
                         detay: 'Düğün + Kına Gecesi Paketi',
-                        mesaj: 'Teklif onayınız için teşekkürler!',
                         tarih_created: '05.01.2024'
                     },
                     {
@@ -55,9 +53,8 @@ export default function TekliflerPage() {
                         firma_adi: 'Mavi Deniz Otel',
                         tarih: '10.08.2024',
                         fiyat: '35.000 TL',
-                        durum: 'reddedildi',
+                        durum: 'yanitlandi',
                         detay: 'Sahil Düğünü - 200 kişilik',
-                        mesaj: 'Kararınız için teşekkürler. Başka bir paket için bize ulaşabilirsiniz.',
                         tarih_created: '15.12.2023'
                     }
                 ];
@@ -79,20 +76,6 @@ export default function TekliflerPage() {
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                         <Clock size={12} className="mr-1" />
                         Beklemede
-                    </span>
-                );
-            case 'onaylandi':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <Check size={12} className="mr-1" />
-                        Onaylandı
-                    </span>
-                );
-            case 'reddedildi':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        <X size={12} className="mr-1" />
-                        Reddedildi
                     </span>
                 );
             default:
@@ -154,24 +137,6 @@ export default function TekliflerPage() {
                                 <p className="text-sm text-gray-500">Detay</p>
                                 <p>{teklif.detay}</p>
                             </div>
-
-                            {teklif.mesaj && (
-                                <div className="p-3 bg-gray-50 rounded-md">
-                                    <p className="text-sm text-gray-500">Firma Mesajı:</p>
-                                    <p className="text-sm">{teklif.mesaj}</p>
-                                </div>
-                            )}
-
-                            {teklif.durum === 'beklemede' && (
-                                <div className="flex space-x-2 mt-4">
-                                    <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-50">
-                                        Onayla
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
-                                        Reddet
-                                    </Button>
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>

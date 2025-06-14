@@ -7,6 +7,7 @@ import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent, CardTitle } from '../../../../../components/ui/card';
 import { Star, Heart, MapPin, Phone, Mail, Clock, ChevronRight, CheckCircle, X, Calendar, Users } from 'lucide-react';
 import { ImageGallery } from '../../../../../components/ui/image-gallery';
+import { QuoteModal } from '@/components/quote/quote-modal';
 
 
 // Örnek mekan verisi
@@ -232,18 +233,7 @@ export default function VenueDetail({ params }) {
         notes: ''
     });
     const [onRezervasyonSuccess, setOnRezervasyonSuccess] = useState(false);
-    const [showTeklifModal, setShowTeklifModal] = useState(false);
-    const [teklifFormData, setTeklifFormData] = useState({
-        fullName: '',
-        email: '',
-        phone: '',
-        date: '',
-        isDateUndecided: false,
-        guestCount: '',
-        notes: '',
-        terms: false
-    });
-    const [teklifSuccess, setTeklifSuccess] = useState(false);
+    const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
     const openLightbox = (index) => {
         setActiveImageIndex(index);
@@ -396,62 +386,9 @@ export default function VenueDetail({ params }) {
         }, 3000);
     };
 
-    const handleTeklifChange = (e) => {
-        const { name, value, type, checked } = e.target;
-
-        if (type === 'checkbox') {
-            if (name === 'isDateUndecided') {
-                setTeklifFormData(prev => ({
-                    ...prev,
-                    [name]: checked,
-                    date: checked ? '' : prev.date
-                }));
-            } else {
-                setTeklifFormData(prev => ({
-                    ...prev,
-                    [name]: checked
-                }));
-            }
-        } else {
-            setTeklifFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
-    };
-
-    const handleTeklifSubmit = (e) => {
-        e.preventDefault();
-        console.log('Teklif formunu gönderildi:', teklifFormData);
-
-        // Form işleme simülasyonu
-        setTeklifSuccess(true);
-
-        // 3 saniye sonra modalı kapat
-        setTimeout(() => {
-            setTeklifSuccess(false);
-            setShowTeklifModal(false);
-            setTeklifFormData({
-                fullName: '',
-                email: '',
-                phone: '',
-                date: '',
-                isDateUndecided: false,
-                guestCount: '',
-                notes: '',
-                terms: false
-            });
-        }, 3000);
-    };
-
     const openTeklifModalWithPackage = (pkg) => {
         setSelectedPackage(pkg);
-        setShowTeklifModal(true);
-    };
-
-    const handleCloseTeklifModal = () => {
-        setShowTeklifModal(false);
-        setSelectedPackage(null);
+        setIsQuoteModalOpen(true);
     };
 
     // Klavye olayları için useEffect
@@ -496,7 +433,6 @@ export default function VenueDetail({ params }) {
                 {/* Breadcrumb */}
                 <div className="text-sm text-darkgray mb-4">
                     <a href="/" className="hover:text-primary">Anasayfa</a> {' > '}
-                    <a href="/davet-salonu" className="hover:text-primary">Davet Salonu</a> {' > '}
                     <a href="/davet-salonu/istanbul" className="hover:text-primary">İstanbul</a> {' > '}
                     <a href="/davet-salonu/istanbul/besiktas" className="hover:text-primary">Beşiktaş</a> {' > '}
                     <span className="text-primary">{venue.name}</span>
@@ -526,7 +462,9 @@ export default function VenueDetail({ params }) {
                                 <Heart className="w-4 h-4 mr-1" />
                                 <span className="whitespace-nowrap">Favori</span>
                             </Button>
-                            <div className="flex items-center bg-white border border-border rounded-md px-2 py-1">
+                            <div
+                                onClick={openYorumModal}
+                                className="flex items-center bg-white border border-border rounded-md px-2 py-1 cursor-pointer">
                                 <Star className="h-4 w-4 text-yellow-400 mr-1" />
                                 <span className="font-semibold text-text">{venue.rating}</span>
                                 <span className="text-xs text-darkgray ml-1">({venue.reviewCount})</span>
@@ -805,7 +743,7 @@ export default function VenueDetail({ params }) {
 
                                 <Button
                                     className="w-full text-sm"
-                                    onClick={() => setShowTeklifModal(true)}
+                                    onClick={() => setIsQuoteModalOpen(true)}
                                 >
                                     Ücretsiz Teklif Al
                                 </Button>
@@ -1319,222 +1257,6 @@ export default function VenueDetail({ params }) {
                     </div>
                 )}
 
-                {/* Teklif Alma Modal */}
-                {showTeklifModal && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4"
-                        onClick={(e) => {
-                            // Modal dışına tıklanırsa modalı kapat
-                            if (e.target === e.currentTarget) {
-                                handleCloseTeklifModal();
-                            }
-                        }}
-                    >
-                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-auto relative">
-                            <button
-                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
-                                onClick={handleCloseTeklifModal}
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                            <div className="p-4 sm:p-6">
-                                {teklifSuccess ? (
-                                    <div className="py-6 text-center">
-                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                                            <svg className="w-8 h-8" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xl font-bold text-text mb-2">Teklif Talebiniz Alındı</h3>
-                                        <p className="text-sm text-darkgray mb-4">
-                                            Teklif talebiniz başarıyla alınmıştır. 24 saat içinde sizinle iletişime geçilecektir.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <h2 className="text-xl font-bold text-text mb-1">Ücretsiz Teklif Al</h2>
-                                        <p className="text-sm text-gray-500 mb-2">
-                                            {venue.name}{selectedPackage ? ` - ${selectedPackage.name}` : ''}
-                                        </p>
-
-                                        <form className="space-y-4" onSubmit={handleTeklifSubmit}>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Paket Seçimi</label>
-                                                {selectedPackage ? (
-                                                    <div className="bg-primary/5 border border-primary/20 rounded-md p-3 hover:bg-primary/10 cursor-pointer transition-colors"
-                                                        onClick={() => setSelectedPackage(null)}
-                                                    >
-                                                        <div className="flex justify-between items-center">
-                                                            <div>
-                                                                <p className="text-sm font-medium text-primary">{selectedPackage.name}</p>
-                                                                <p className="text-xs text-gray-500">{selectedPackage.type} | {selectedPackage.priceType}</p>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="font-bold text-lg text-text">{selectedPackage.price} TL</p>
-                                                                <button
-                                                                    type="button"
-                                                                    className="text-xs text-primary underline"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setSelectedPackage(null);
-                                                                    }}
-                                                                >
-                                                                    Değiştir
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <select
-                                                        name="packageSelect"
-                                                        className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                        onChange={(e) => {
-                                                            const selectedId = parseInt(e.target.value);
-                                                            if (selectedId) {
-                                                                const pkg = venue.packages.find(p => p.id === selectedId);
-                                                                setSelectedPackage(pkg);
-                                                            } else {
-                                                                setSelectedPackage(null);
-                                                            }
-                                                        }}
-                                                        value={selectedPackage?.id || ""}
-                                                    >
-                                                        <option value="">Paket seçiniz (opsiyonel)</option>
-                                                        {venue.packages.map((pkg) => (
-                                                            <option key={pkg.id} value={pkg.id}>
-                                                                {pkg.name} - {pkg.price} TL ({pkg.priceType})
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Ad Soyad</label>
-                                                <input
-                                                    type="text"
-                                                    name="fullName"
-                                                    value={teklifFormData.fullName}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    placeholder="Adınız Soyadınız"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">E-posta</label>
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={teklifFormData.email}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    placeholder="E-posta adresiniz"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Telefon</label>
-                                                <input
-                                                    type="tel"
-                                                    name="phone"
-                                                    value={teklifFormData.phone}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    placeholder="Telefon numaranız"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between items-center">
-                                                    <label className="block text-sm font-medium mb-1 text-text">Davet Tarihi</label>
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            id="dateNotDecided"
-                                                            name="isDateUndecided"
-                                                            checked={teklifFormData.isDateUndecided}
-                                                            onChange={handleTeklifChange}
-                                                            className="mr-2"
-                                                        />
-                                                        <label htmlFor="dateNotDecided" className="text-xs text-gray-600">
-                                                            Henüz belli değil
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <input
-                                                    type="date"
-                                                    name="date"
-                                                    value={teklifFormData.date}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    disabled={teklifFormData.isDateUndecided}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Misafir Sayısı</label>
-                                                <select
-                                                    name="guestCount"
-                                                    value={teklifFormData.guestCount}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    required
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    <option value="0-50">0-50 kişi</option>
-                                                    <option value="51-100">51-100 kişi</option>
-                                                    <option value="101-200">101-200 kişi</option>
-                                                    <option value="201-500">201-500 kişi</option>
-                                                    <option value="500+">500+ kişi</option>
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1 text-text">Mesajınız (İsteğe bağlı)</label>
-                                                <textarea
-                                                    name="notes"
-                                                    value={teklifFormData.notes}
-                                                    onChange={handleTeklifChange}
-                                                    className="w-full p-3 border border-gray-300 rounded-md text-sm"
-                                                    rows="3"
-                                                    placeholder="Mesajınızı buraya yazabilirsiniz..."
-                                                ></textarea>
-                                            </div>
-
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    id="terms"
-                                                    name="terms"
-                                                    checked={teklifFormData.terms}
-                                                    onChange={handleTeklifChange}
-                                                    className="mr-2"
-                                                    required
-                                                />
-                                                <label htmlFor="terms" className="text-xs text-gray-600">
-                                                    Kişisel bilgilerimin düğün salonu ile paylaşılmasını onaylıyorum.
-                                                </label>
-                                            </div>
-
-                                            <div className="pt-2">
-                                                <Button type="submit" className="w-full text-sm">Ücretsiz Teklif Al</Button>
-                                            </div>
-
-                                            <p className="text-xs text-center text-gray-500">
-                                                24 saat içinde dönüş alacaksınız
-                                            </p>
-                                        </form>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {/* Benzer Mekanlar */}
                 <div className="mb-8">
                     <h2 className="text-xl font-bold mb-4 text-text">Benzer Mekanlar</h2>
@@ -1566,6 +1288,18 @@ export default function VenueDetail({ params }) {
                     </div>
                 </div>
             </div>
+
+            <QuoteModal
+                isOpen={isQuoteModalOpen}
+                onClose={() => {
+                    setIsQuoteModalOpen(false);
+                    setSelectedPackage(null);
+                }}
+                venue={{
+                    ...venue,
+                    packages: selectedPackage ? [selectedPackage] : venue.packages
+                }}
+            />
         </Layout>
     );
 } 

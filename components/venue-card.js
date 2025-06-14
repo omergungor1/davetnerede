@@ -6,11 +6,22 @@ import { Heart } from 'lucide-react';
 import { Modal } from './ui/modal';
 import { RequestQuoteForm } from './request-quote-form';
 import { ImageGallery } from './ui/image-gallery';
+import { QuoteModal } from './quote/quote-modal';
 
-export function VenueCard({ venue }) {
+export function VenueCard({ venue, isSmall = false }) {
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
     const [quoteSubmitted, setQuoteSubmitted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+
+    const getLowestActivePackage = (packages) => {
+        if (!packages || packages.length === 0) return null;
+
+        const activePackages = packages.filter(pkg => !pkg.isDeleted);
+        if (activePackages.length === 0) return null;
+
+        return activePackages.reduce((min, current) =>
+            current.price < min.price ? current : min, activePackages[0]);
+    };
 
     // Mobil görünümü kontrol et
     useEffect(() => {
@@ -83,17 +94,11 @@ export function VenueCard({ venue }) {
                     </div>
 
                     <div className="flex items-center text-xs text-darkgray mb-3">
-                        {venue.location && <span className="mr-2">{venue.location}</span>}
+                        {venue.district_name && <span className="mr-2">{venue.district_name}</span>}
                         {venue.capacity && (
                             <>
                                 <span className="mx-1">•</span>
-                                <span>{venue.capacity}</span>
-                            </>
-                        )}
-                        {venue.capacity_range && (
-                            <>
-                                <span className="mx-1">•</span>
-                                <span>{venue.capacity_range}</span>
+                                <span>{venue.capacity} kişi</span>
                             </>
                         )}
                     </div>
@@ -106,15 +111,33 @@ export function VenueCard({ venue }) {
                             </span>
                         ))}
                     </div>
+                    {/* <div className="text-xs text-darkgray mb-4">
+                        {venue.services?.map((service, index) => (
+                            <span key={index}>
+                                {index > 0 && <span className="mx-1">•</span>}
+                                {service}
+                            </span>
+                        ))}
+                    </div> */}
 
-                    <div className="mt-4 flex items-center justify-between">
+                    <div className={`mt-4 flex ${isSmall ? 'flex-col' : ' flex-col md:flex-row'} ${isSmall ? 'items-start' : 'items-start md:items-center'} ${isSmall ? 'justify-start' : 'justify-start md:justify-between'} ${isSmall ? 'gap-2' : 'gap-2 md:gap-0'}`}>
                         <div>
-                            {venue.price_label && <span className="text-xs text-darkgray">{venue.price_label}</span>}
-                            {venue.base_price && (
-                                <div className="font-semibold text-text">
-                                    {venue.base_price} TL
-                                </div>
-                            )}
+                            {(() => {
+                                const lowestPackage = getLowestActivePackage(venue.packages);
+                                if (!lowestPackage) return null;
+
+                                return (
+                                    <>
+                                        <span className="text-xs text-darkgray">
+                                            {lowestPackage.is_per_person ? 'Kişi Başı' : 'Paket'}
+                                        </span>
+                                        <div className="font-semibold text-text flex items-center gap-2">
+                                            {lowestPackage.price.toLocaleString('tr-TR')} ₺
+                                            <span className="text-xs text-darkgray">'den başlayan fiyatlarla</span>
+                                        </div>
+                                    </>
+                                );
+                            })()}
                         </div>
 
                         <div className="flex space-x-2">
@@ -124,6 +147,7 @@ export function VenueCard({ venue }) {
                             >
                                 Teklif Al
                             </button>
+                            {console.log(venue)}
                             <Link href={`/davet-salonu/${venue.slug}`} className="bg-primary text-white text-sm rounded px-3 py-1 hover:bg-primary/90 transition-colors">
                                 İncele
                             </Link>
@@ -132,31 +156,11 @@ export function VenueCard({ venue }) {
                 </div>
             </div>
 
-            <Modal
+            <QuoteModal
                 isOpen={isQuoteModalOpen}
                 onClose={() => setIsQuoteModalOpen(false)}
-                title={quoteSubmitted ? "Teşekkürler!" : "Ücretsiz Teklif Alın"}
-            >
-                {quoteSubmitted ? (
-                    <div className="py-6 text-center">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Talebiniz Alındı!</h3>
-                        <p className="text-sm text-gray-500">
-                            Teklif talebiniz başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.
-                        </p>
-                    </div>
-                ) : (
-                    <RequestQuoteForm
-                        venueName={venue.name}
-                        onSuccess={handleQuoteSuccess}
-                        onClose={() => setIsQuoteModalOpen(false)}
-                    />
-                )}
-            </Modal>
+                venue={venue}
+            />
         </>
     );
 } 

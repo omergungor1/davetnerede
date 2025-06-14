@@ -1,20 +1,33 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, Plus, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { Loader2, Upload, X, ImagePlus, MoveVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { uploadBusinessImage, deleteBusinessImage, reorderBusinessImages, getBusinessImages } from '@/lib/upload-helpers';
+import { useAuth } from '@/app/context/auth-context';
+import toast from 'react-hot-toast';
 
 export function ImageUploader({
-    images = [],
+    images: initialImages = [],
     onChange,
     maxImages = 10,
-    title = "İşletme Resimleri",
-    description = "Mekanınızın resimlerini yükleyin. En fazla 10 adet resim yükleyebilirsiniz."
+    title = 'Fotoğraflar',
+    description = 'Fotoğraf ekleyin',
+    businessId
 }) {
-    const [uploading, setUploading] = useState(false);
+    const [images, setImages] = useState(initialImages);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [dragging, setDragging] = useState(false);
+    const [draggedIndex, setDraggedIndex] = useState(null);
     const fileInputRef = useRef(null);
+    const { user } = useAuth();
 
-    const handleUploadClick = () => {
+    const handleClick = () => {
+        if (images.length >= maxImages) {
+            toast.error(`En fazla ${maxImages} resim yükleyebilirsiniz.`);
+            return;
+        }
         fileInputRef.current?.click();
     };
 
@@ -23,193 +36,266 @@ export function ImageUploader({
         if (!files.length) return;
 
         if (images.length + files.length > maxImages) {
-            alert(`En fazla ${maxImages} resim yükleyebilirsiniz.`);
+            setError(`En fazla ${maxImages} resim yükleyebilirsiniz.`);
             return;
         }
 
-        setUploading(true);
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) {
+                setError('Lütfen sadece resim dosyaları yükleyin');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Her resim dosyası 5MB\'dan küçük olmalıdır');
+                return;
+            }
+        }
+
+        setLoading(true);
+        setError(null);
 
         try {
-            // Her bir dosya için aşağıdaki işlemler yapılır
-            const newImages = await Promise.all(
-                files.map(async (file) => {
-                    // Dosyayı base64'e çevir (gerçek uygulamada burada sunucuya yükleme yapılabilir)
-                    const base64 = await convertToBase64(file);
-                    return {
-                        id: Date.now() + Math.random().toString(36).substring(2, 9), // Benzersiz ID
-                        src: base64,
-                        name: file.name,
-                        type: file.type,
-                        order: images.length // Eklendiği andaki sıra
-                    };
-                })
-            );
+            if (!businessId) {
+                throw new Error('İşletme bilgisi bulunamadı');
+            }
 
-            // Yeni resimleri ekleyip sıra numaralarını güncelle
-            const updatedImages = [...images, ...newImages].map((img, index) => ({
-                ...img,
-                order: index
-            }));
+            const uploadPromises = files.map(async (file, index) => {
+                const sequence = images.length + index;
+                const result = await uploadBusinessImage(file, businessId, sequence);
+                return result;
+            });
 
+            const uploadedImages = await Promise.all(uploadPromises);
+
+            // Yüklenen resimleri getir
+            const updatedImages = await getBusinessImages(businessId);
+            setImages(updatedImages);
             onChange(updatedImages);
+
+            toast.success('Resimler başarıyla yüklendi');
         } catch (error) {
-            console.error("Resim yükleme hatası:", error);
-            alert("Resimler yüklenirken bir hata oluştu.");
+            console.error('Resim yükleme hatası:', error);
+            toast.error('Resim yüklenirken bir hata oluştu');
         } finally {
-            setUploading(false);
-            // Input'u temizle ki aynı dosyayı tekrar seçebilsin
+            setLoading(false);
+
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
         }
     };
 
-    const convertToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
+    const handleRemove = async (index) => {
+        try {
+            if (!businessId) {
+                throw new Error('İşletme bilgisi bulunamadı');
+            }
 
-    const handleRemoveImage = (id) => {
-        const filteredImages = images.filter(img => img.id !== id);
-        // Silme işleminden sonra sıra numaralarını güncelle
-        const updatedImages = filteredImages.map((img, index) => ({
-            ...img,
-            order: index
-        }));
-        onChange(updatedImages);
-    };
+            const imageToDelete = images[index];
 
-    const handleMoveImage = (id, direction) => {
-        const imageIndex = images.findIndex(img => img.id === id);
-        if (
-            (direction === 'up' && imageIndex === 0) ||
-            (direction === 'down' && imageIndex === images.length - 1)
-        ) {
-            return; // İlk resmi yukarı veya son resmi aşağı taşımaya çalışıyorsa, bir şey yapma
+            if (imageToDelete.id) {
+                await deleteBusinessImage(imageToDelete.id, businessId);
+            }
+
+            const newImages = [...images];
+            newImages.splice(index, 1);
+
+            const updatedImages = newImages.map((img, idx) => ({
+                ...img,
+                sequence: idx
+            }));
+
+            onChange(updatedImages);
+            toast.success('Resim silindi');
+        } catch (err) {
+            console.error('Resim silme hatası:', err);
+            toast.error('Resim silinirken bir hata oluştu');
         }
+    };
+
+    const handleDragStart = (index) => {
+        setDraggedIndex(index);
+        setDragging(true);
+    };
+
+    const handleDragEnter = (index) => {
+        if (draggedIndex === null || draggedIndex === index) return;
 
         const newImages = [...images];
-        const targetIndex = direction === 'up' ? imageIndex - 1 : imageIndex + 1;
+        const draggedImage = newImages[draggedIndex];
 
-        // Resimlerin yerlerini değiştir
-        [newImages[imageIndex], newImages[targetIndex]] = [newImages[targetIndex], newImages[imageIndex]];
+        newImages.splice(draggedIndex, 1);
+        newImages.splice(index, 0, draggedImage);
 
-        // Sıra numaralarını güncelle
-        const updatedImages = newImages.map((img, index) => ({
+        const updatedImages = newImages.map((img, idx) => ({
             ...img,
-            order: index
+            sequence: idx
         }));
 
         onChange(updatedImages);
+        setDraggedIndex(index);
+    };
+
+    const handleDragEnd = async (result) => {
+        if (!result.destination) return;
+
+        const items = Array.from(images);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+
+        // Sıra numaralarını güncelle
+        const updatedItems = items.map((item, index) => ({
+            ...item,
+            sequence: index
+        }));
+
+        try {
+            await reorderBusinessImages(updatedItems, businessId);
+
+            // Güncel resimleri getir
+            const updatedImages = await getBusinessImages(businessId);
+            setImages(updatedImages);
+            onChange(updatedImages);
+
+            toast.success('Resim sırası güncellendi');
+        } catch (error) {
+            console.error('Resim sıralama hatası:', error);
+            toast.error('Resim sırası güncellenirken bir hata oluştu');
+        }
+    };
+
+    const handleDelete = async (imageId) => {
+        try {
+            if (!businessId) {
+                throw new Error('İşletme bilgisi bulunamadı');
+            }
+
+            await deleteBusinessImage(imageId, businessId);
+
+            // Güncel resimleri getir
+            const updatedImages = await getBusinessImages(businessId);
+            setImages(updatedImages);
+            onChange(updatedImages);
+
+            toast.success('Resim başarıyla silindi');
+        } catch (error) {
+            console.error('Resim silme hatası:', error);
+            toast.error('Resim silinirken bir hata oluştu');
+        }
     };
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h3 className="text-lg font-medium">{title}</h3>
-                    <p className="text-sm text-gray-500">{description}</p>
-                </div>
-                <div className="flex items-center">
-                    <span className="text-sm text-gray-500 mr-3">
-                        {images.length}/{maxImages} resim
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleUploadClick}
-                        disabled={uploading || images.length >= maxImages}
-                        className="flex items-center gap-2"
-                    >
-                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                        Resim Ekle
-                    </Button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        disabled={uploading}
-                    />
-                </div>
+            <div className="flex flex-col space-y-1">
+                {title && <h3 className="text-lg font-medium text-text">{title}</h3>}
+                {description && <p className="text-sm text-darkgray">{description}</p>}
             </div>
 
-
-            {images.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {images.map((image) => (
-                        <div key={image.id} className="relative group border rounded-md overflow-hidden aspect-square">
-                            <img
-                                src={image.src}
-                                alt={image.name || "İşletme resmi"}
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div className="flex flex-col items-center space-y-2">
-                                    <div className="flex space-x-1">
-                                        <button
-                                            type="button"
-                                            className={`h-8 w-8 bg-white hover:bg-gray-200 rounded flex items-center justify-center border border-gray-300 ${image.order === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            onClick={() => handleMoveImage(image.id, 'up')}
-                                            disabled={image.order === 0}
-                                        >
-                                            <ArrowLeft size={16} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={`h-8 w-8 bg-white hover:bg-gray-200 rounded flex items-center justify-center border border-gray-300 ${image.order === images.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            onClick={() => handleMoveImage(image.id, 'down')}
-                                            disabled={image.order === images.length - 1}
-                                        >
-                                            <ArrowRight size={16} />
-                                        </button>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="h-8 w-8 bg-white hover:bg-red-100 rounded flex items-center justify-center border border-red-300 text-red-600"
-                                        onClick={() => handleRemoveImage(image.id)}
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            <span className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                                {image.order + 1}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="border-2 border-dashed rounded-md p-8 text-center bg-gray-50">
-                    <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500 mb-2">Henüz resim eklenmedi</p>
-                    <p className="text-sm text-gray-400">PNG, JPG, WEBP (max. 5MB)</p>
-                    <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={handleUploadClick}
-                        disabled={uploading}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {images.map((image, index) => (
+                    <div
+                        key={image.id || index}
+                        className={`relative group aspect-square rounded-md overflow-hidden border border-border bg-gray-50 
+                            ${dragging ? 'cursor-move' : 'cursor-pointer'} 
+                            ${draggedIndex === index ? 'ring-2 ring-primary shadow-lg' : ''}`}
+                        draggable={true}
+                        onDragStart={() => handleDragStart(index)}
+                        onDragEnter={() => handleDragEnter(index)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDragEnd={handleDragEnd}
+                        style={{ touchAction: 'none' }}
                     >
-                        {uploading ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Yükleniyor...
-                            </>
-                        ) : (
-                            <>
-                                <Upload className="h-4 w-4 mr-2" />
-                                Resim Seç
-                            </>
+                        <img
+                            src={image.url}
+                            alt={`Resim ${index + 1}`}
+                            className="w-full h-full object-cover"
+                        />
+
+                        <div className="absolute top-2 left-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                            {index + 1}
+                        </div>
+
+                        {index === 0 && (
+                            <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-0.5 rounded">
+                                Kapak
+                            </div>
                         )}
-                    </Button>
-                </div>
+
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-white text-black hover:bg-red-500 hover:text-white"
+                                onClick={() => handleRemove(index)}
+                            >
+                                <X size={16} className="mr-1" /> Sil
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-white text-black"
+                            >
+                                <MoveVertical size={16} className="mr-1" /> Sıra Değiştir
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+
+                {images.length < maxImages && !loading && (
+                    <button
+                        type="button"
+                        onClick={handleClick}
+                        className="aspect-square flex flex-col items-center justify-center rounded-md border border-dashed border-border bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                        <ImagePlus className="h-8 w-8 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-500">Resim Ekle</span>
+                    </button>
+                )}
+
+                {loading && (
+                    <div className="aspect-square flex items-center justify-center rounded-md border border-border bg-gray-50">
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    </div>
+                )}
+            </div>
+
+            <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+                multiple
+            />
+
+            {error && (
+                <p className="text-sm text-red-500 mt-2">{error}</p>
             )}
+
+            <div className="flex items-center justify-between mt-4">
+                <p className="text-xs text-gray-500">
+                    {images.length} / {maxImages} resim
+                </p>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClick}
+                    disabled={loading || images.length >= maxImages}
+                    className="flex items-center gap-2"
+                >
+                    <Upload size={16} />
+                    Resim Ekle
+                </Button>
+            </div>
+
+            <p className="text-xs text-gray-500">
+                <strong>Not:</strong> İlk sıradaki resim kapak fotoğrafı olarak kullanılacaktır.
+                Sıralamayı değiştirmek için resimleri sürükleyip bırakabilirsiniz.
+            </p>
         </div>
     );
 } 

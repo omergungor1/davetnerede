@@ -12,6 +12,7 @@ export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
+
     // Eğer images bir string veya undefined ise, tek elemanlı bir diziye dönüştür
     const imageArray = !images || typeof images === 'string'
         ? [images || '/images/placeholder.jpg']
@@ -238,7 +239,7 @@ export function ImageGallery({ images, alt, height = "h-52", link, objectFit = "
 
             <div className="relative w-full h-full flex items-center justify-center">
                 <img
-                    src={imageArray[lightboxIndex]}
+                    src={imageArray[lightboxIndex].url}
                     alt={`${alt} - ${lightboxIndex + 1}`}
                     className="max-h-[90vh] max-w-[90vw] object-contain"
                 />

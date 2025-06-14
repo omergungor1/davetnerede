@@ -88,7 +88,7 @@ const turkiyeIlIlce = {
     { id: 1, province_id: 1, name: "Aladağ", slug: "aladag" },
     { id: 2, province_id: 1, name: "Ceyhan", slug: "ceyhan" },
     { id: 3, province_id: 1, name: "Çukurova", slug: "cukurova" },
-    { id: 4, province_id: 1, name: "Feke", slug: "fek" },
+    { id: 4, province_id: 1, name: "Feke", slug: "feke" },
     { id: 5, province_id: 1, name: "İmamoğlu", slug: "imamoglu" },
     { id: 6, province_id: 1, name: "Karaisalı", slug: "karaisali" },
     { id: 7, province_id: 1, name: "Karataş", slug: "karatas" },

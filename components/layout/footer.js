@@ -45,7 +45,7 @@ export function Footer() {
                     <p className="text-xs text-darkgray">
                         © 2023-{new Date().getFullYear()} Davetevibul.com Tüm hakları saklıdır.
                     </p>
-                    <div className="flex space-x-4 mt-4 md:mt-0">
+                    {/* <div className="flex space-x-4 mt-4 md:mt-0">
                         <Link href="#" className="text-darkgray hover:text-primary">
                             <Instagram size={18} />
                         </Link>
@@ -61,7 +61,7 @@ export function Footer() {
                         <Link href="#" className="text-darkgray hover:text-primary">
                             <Linkedin size={18} />
                         </Link>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </footer>

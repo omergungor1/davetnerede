@@ -8,98 +8,6 @@ import turkiyeIlIlce from '../../data/turkiye-il-ilce';
 import { useRouter } from 'next/navigation';
 import { useLocation } from '../../app/context/location-context';
 
-// Örnek mekan verileri
-const venues = [
-    {
-        id: 1,
-        name: 'Mövenpick Hotel İstanbul Asia Airport',
-        image: '/images/mekan-1.webp',
-        images: [
-            '/images/salon-6.webp',
-            '/images/mekan-2.webp',
-            '/images/mekan-3.jpeg',
-        ],
-        rating: '5.0',
-        reviewCount: '(45)',
-        location: 'Pendik',
-        capacity: '50 - 1000',
-        features: ['Modern ve filitresiz', 'Menü tadımı', 'Giriş dans pisti', 'Jimmy Jib', 'Sahne ışık sistemi', 'Geniş otopark', '5 yıldızlı otel'],
-        price_label: 'Kişi Başı',
-        base_price: '1.350',
-        slug: 'bursa/gemlik/nova-davet-ddf2'
-    },
-    {
-        id: 2,
-        name: 'Casamento',
-        image: '/images/salon-2.webp',
-        images: [
-            '/images/salon-2.webp',
-            '/images/salon-6.webp',
-            '/images/salon-9.jpg'
-        ],
-        rating: '5.0',
-        reviewCount: '(31)',
-        location: 'Sarıyer',
-        capacity_range: '100 - 350',
-        features: ['Boğaz manzarası', 'Havuz başında', 'Modern ve sade', 'Fotoğraf çekim alanı', 'Menü tadımı', 'DJ', 'Sahne ışık sistemi', 'Geniş otopark'],
-        price_label: 'Yemekli Kişi Başı',
-        base_price: '3.500',
-        slug: 'bursa/gemlik/casamento-ddf2'
-    },
-    {
-        id: 3,
-        name: 'Plus Hotel',
-        image: '/images/salon-4.webp',
-        images: [
-            '/images/salon-4.webp',
-            '/images/salon-10.jpg',
-            '/images/salon-12.jpg',
-            '/images/salon-15.jpg'
-        ],
-        rating: '5.0',
-        reviewCount: '(111)',
-        features: ['Butik düğüne uygun', 'Gün ışığı alan', 'DJ', 'Büyük gelin odası', 'Alkol servisi yok', 'Kolay ulaşım', 'Nişan süslemesi', 'Nişan tepsisi'],
-        price_label: 'Paket',
-        base_price: '65.000',
-        slug: 'bursa/osmangazi/plus-hotel-ddf2'
-    },
-    {
-        id: 4,
-        name: 'May Otel',
-        image: '/images/salon-5.webp',
-        images: [
-            '/images/salon-5.webp',
-            '/images/salon-11.jpg',
-            '/images/salon-14.jpg'
-        ],
-        rating: '4.9',
-        reviewCount: '(11)',
-        capacity_range: '10 - 95',
-        features: ['Boğaz manzarası', 'Modern ve sade', 'Cam salon', 'Fotoğraf çekim alanı', 'Alkol servisi yok', 'Balkon / Teras alanı', 'Kolay ulaşım', 'Nişan süslemesi'],
-        price_label: 'Kişi Başı',
-        base_price: '900',
-        slug: 'bursa/gemlik/may-otel-ddf2'
-    },
-    {
-        id: 5,
-        name: 'Gopark Event',
-        image: '/images/salon-6.webp',
-        images: [
-            '/images/salon-6.webp',
-            '/images/salon-16.jpg',
-            '/images/salon-1.webp',
-            '/images/salon-2.webp'
-        ],
-        rating: '5.0',
-        reviewCount: '(112)',
-        location: 'Gaziosmanpaşa',
-        features: ['Modern ve filtresiz', 'Yüksek tavan', 'Kolonssuz', 'Fotoğraf çekim alanı', 'Geniş dans pisti', 'Canlı müzik', 'DJ', 'Sahne ışık sistemi', 'Alkol servisi var'],
-        price_label: 'Yemekli Kişi Başı',
-        base_price: '500',
-        slug: 'bursa/gemlik/gopark-event-ddf2'
-    }
-];
-
 export function VenuesList({ province, district }) {
     const [filtersVisible, setFiltersVisible] = useState(false);
     const [isClient, setIsClient] = useState(false);
@@ -108,6 +16,69 @@ export function VenuesList({ province, district }) {
     const [districtOptions, setDistrictOptions] = useState([]);
     const router = useRouter();
     const { location, setLocation } = useLocation();
+
+    // Veri durumları
+    const [venues, setVenues] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Sayfalama durumları
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        pageSize: 5,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+    });
+
+    // API'dan veri çekme fonksiyonu
+    const fetchVenues = async (page = 1) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // İl slugunu bul
+            const provinceObj = province ? turkiyeIlIlce.provinces.find(
+                p => p.name.toLocaleLowerCase('tr-TR').trim() === province.toLocaleLowerCase('tr-TR').trim()
+            ) : null;
+
+            if (!provinceObj) {
+                setVenues([]);
+                setLoading(false);
+                return;
+            }
+
+            // İlçe slugunu bul
+            const districtObj = district && provinceObj ? turkiyeIlIlce.districts.find(
+                d => d.name.toLocaleLowerCase('tr-TR').trim() === district.toLocaleLowerCase('tr-TR').trim() &&
+                    d.province_id === provinceObj.id
+            ) : null;
+
+            // API URL oluştur
+            let url = `/api/venues?province_slug=${provinceObj.slug}&page=${page}`;
+            if (districtObj) {
+                url += `&district_slug=${districtObj.slug}`;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Mekanlar yüklenirken bir hata oluştu');
+            }
+
+
+            const data = await response.json();
+            setVenues(data.venues);
+            setPagination(data.pagination);
+            setCurrentPage(data?.pagination?.page || 1);
+        } catch (err) {
+            console.error('Veri çekme hatası:', err);
+            setError(err.message || 'Bir hata oluştu');
+            setVenues([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         setIsClient(true);
@@ -140,6 +111,13 @@ export function VenuesList({ province, district }) {
             window.removeEventListener('resize', handleResize);
         };
     }, [province, district, setLocation]);
+
+    // Province veya district değiştiğinde veya sayfa değiştiğinde verileri getir
+    useEffect(() => {
+        if (province) {
+            fetchVenues(currentPage);
+        }
+    }, [province, district, currentPage]);
 
     // Seçili ile göre ilçeleri getir
     useEffect(() => {
@@ -254,14 +232,68 @@ export function VenuesList({ province, district }) {
         }
     };
 
+    // Sayfa değiştirme işlemleri
+    const handlePrevPage = () => {
+        if (pagination.hasPrevPage) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (pagination.hasNextPage) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePageClick = (page) => {
+        if (page !== currentPage) {
+            setCurrentPage(page);
+        }
+    };
+
+    // Sayfalama numaralarını hazırla
+    const getPageNumbers = () => {
+        let pageNumbers = [];
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(pagination.totalPages, currentPage + 2);
+
+        if (pagination.totalPages <= 5) {
+            // 5 veya daha az sayfa varsa hepsini göster
+            for (let i = 1; i <= pagination.totalPages; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            // İlk sayfa
+            if (startPage > 1) {
+                pageNumbers.push(1);
+                if (startPage > 2) {
+                    pageNumbers.push('...');
+                }
+            }
+
+            // Orta sayfalar
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+            }
+
+            // Son sayfa
+            if (endPage < pagination.totalPages) {
+                if (endPage < pagination.totalPages - 1) {
+                    pageNumbers.push('...');
+                }
+                pageNumbers.push(pagination.totalPages);
+            }
+        }
+
+        return pageNumbers;
+    };
+
     const activeFilterCount = 7;
 
     // Başlık ve sayfa içeriği için bilgiler
     const pageTitle = district
         ? `${district}, ${province} Söz, Nişan Mekanları`
         : `${province} Söz, Nişan Mekanları`;
-
-    const filteredVenues = venues; // Gerçek uygulamada province ve district'e göre filtreleme yapılır
 
     return (
         <div className="bg-background min-h-screen">
@@ -340,90 +372,30 @@ export function VenuesList({ province, district }) {
                             </div>
 
                             <div className="border-t border-border pt-4 mb-4">
-                                <h3 className="font-medium text-text mb-2">Fiyat</h3>
-                                <ul className="text-sm">
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>0TL - 300TL</span>
-                                            <span className="text-xs text-darkgray">(27)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>300TL - 600TL</span>
-                                            <span className="text-xs text-darkgray">(43)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>600TL - 900TL</span>
-                                            <span className="text-xs text-darkgray">(38)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>900TL - 1200TL</span>
-                                            <span className="text-xs text-darkgray">(24)</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="border-t border-border pt-4 mb-4">
                                 <h3 className="font-medium text-text mb-2">Davetli Sayısı</h3>
                                 <ul className="text-sm">
                                     <li className="mb-2">
                                         <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>0 - 100 kişi</span>
+                                            <span>0 - 50 kişi</span>
                                             <span className="text-xs text-darkgray">(56)</span>
                                         </a>
                                     </li>
                                     <li className="mb-2">
                                         <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>100 - 300 kişi</span>
+                                            <span>50 - 100 kişi</span>
                                             <span className="text-xs text-darkgray">(124)</span>
                                         </a>
                                     </li>
                                     <li className="mb-2">
                                         <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>300 - 500 kişi</span>
+                                            <span>100 - 200 kişi</span>
                                             <span className="text-xs text-darkgray">(87)</span>
                                         </a>
                                     </li>
                                     <li className="mb-2">
                                         <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>500 - 1000 kişi</span>
+                                            <span>200 + kişi</span>
                                             <span className="text-xs text-darkgray">(32)</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="border-t border-border pt-4 mb-4">
-                                <h3 className="font-medium text-text mb-2">Mekan Özellikleri</h3>
-                                <ul className="text-sm">
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>Manzara</span>
-                                            <span className="text-xs text-darkgray">(67)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>Açık Alan</span>
-                                            <span className="text-xs text-darkgray">(93)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>Kapalı Alan</span>
-                                            <span className="text-xs text-darkgray">(142)</span>
-                                        </a>
-                                    </li>
-                                    <li className="mb-2">
-                                        <a href="#" className="text-darkgray hover:text-primary flex items-center justify-between">
-                                            <span>Otel</span>
-                                            <span className="text-xs text-darkgray">(29)</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -434,8 +406,10 @@ export function VenuesList({ province, district }) {
 
                     {/* Sağ İçerik */}
                     <div className="w-full md:w-3/4 lg:w-4/5">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-text text-sm">{filteredVenues.length} adet {pageTitle} bulundu.</h1>
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center md:mb-6  mb-4">
+                            <h1 className="text-text text-sm">
+                                {loading ? 'Yükleniyor...' : `${venues?.length || 0} adet ${pageTitle} bulundu.`}
+                            </h1>
 
                             <div className="flex items-center space-x-4">
                                 <div className="relative">
@@ -453,62 +427,86 @@ export function VenuesList({ province, district }) {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center space-x-2">
-                                    <button className="p-2 text-primary border border-border rounded-md hover:bg-lightgray">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M8 6h13"></path>
-                                            <path d="M8 12h13"></path>
-                                            <path d="M8 18h13"></path>
-                                            <path d="M3 6h.01"></path>
-                                            <path d="M3 12h.01"></path>
-                                            <path d="M3 18h.01"></path>
-                                        </svg>
-                                    </button>
-                                    <button className="p-2 bg-lightgray text-primary border border-border rounded-md hover:bg-gray-200">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="14" width="7" height="7"></rect>
-                                            <rect x="3" y="14" width="7" height="7"></rect>
-                                        </svg>
-                                    </button>
+                            </div>
+                        </div>
+
+                        {/* Yükleniyor veya Hata Durumu */}
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                            </div>
+                        ) : error ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="text-red-500 text-center">
+                                    <p className="text-lg font-medium mb-2">Bir hata oluştu</p>
+                                    <p className="text-sm">{error}</p>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Mekan Kartları */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-                            {filteredVenues.map((venue) => (
-                                <VenueCard key={venue.id} venue={venue} />
-                            ))}
-                        </div>
-
-                        {/* Sayfalama */}
-                        <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
-                            <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 sm:mr-2">
-                                    <polyline points="15 18 9 12 15 6"></polyline>
-                                </svg>
-                                <span className="hidden xs:inline">Önceki</span>
-                            </button>
-
-                            <div className="flex items-center space-x-1 mx-auto">
-                                <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm bg-primary text-white rounded-md">1</span>
-                                <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">2</span>
-                                <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">3</span>
-                                <span className="hidden sm:inline-flex items-center justify-center h-8 px-2 text-sm text-darkgray">...</span>
-                                <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">7</span>
-                                <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">8</span>
-                                <span className="hidden sm:inline-flex items-center justify-center min-w-[32px] h-8 text-sm text-darkgray hover:bg-lightgray rounded-md">9</span>
+                        ) : venues?.length === 0 ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="text-center">
+                                    <p className="text-lg font-medium mb-2">Hiç sonuç bulunamadı</p>
+                                    <p className="text-sm text-gray-500">Arama kriterlerinizi değiştirerek tekrar deneyin</p>
+                                </div>
                             </div>
+                        ) : (
+                            <>
+                                {/* Mekan Kartları */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+                                    {venues?.map((venue) => (
+                                        <VenueCard key={venue.id} venue={venue} />
+                                    ))}
+                                </div>
 
-                            <button className="flex items-center text-sm text-darkgray bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray">
-                                <span className="hidden xs:inline">Sonraki</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 sm:ml-2">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            </button>
-                        </div>
+                                {/* Sayfalama */}
+                                {pagination?.totalPages > 1 && (
+                                    <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+                                        <button
+                                            className={`flex items-center text-sm ${pagination?.hasPrevPage ? 'text-darkgray cursor-pointer' : 'text-gray-300 cursor-not-allowed'} bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray`}
+                                            onClick={handlePrevPage}
+                                            disabled={!pagination?.hasPrevPage}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 sm:mr-2">
+                                                <polyline points="15 18 9 12 15 6"></polyline>
+                                            </svg>
+                                            <span className="hidden xs:inline">Önceki</span>
+                                        </button>
+
+                                        <div className="flex items-center space-x-1 mx-auto">
+                                            {getPageNumbers().map((page, index) => (
+                                                page === '...' ? (
+                                                    <span key={`ellipsis-${index}`} className="hidden sm:inline-flex items-center justify-center h-8 px-2 text-sm text-darkgray">
+                                                        ...
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        key={`page-${page}`}
+                                                        onClick={() => handlePageClick(page)}
+                                                        className={`inline-flex items-center justify-center min-w-[28px] sm:min-w-[32px] h-8 text-sm ${page === currentPage
+                                                            ? 'bg-primary text-white'
+                                                            : 'text-darkgray hover:bg-lightgray'
+                                                            } rounded-md`}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                )
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            className={`flex items-center text-sm ${pagination.hasNextPage ? 'text-darkgray cursor-pointer' : 'text-gray-300 cursor-not-allowed'} bg-white border border-border rounded-md px-3 py-2 hover:bg-lightgray`}
+                                            onClick={handleNextPage}
+                                            disabled={!pagination?.hasNextPage}
+                                        >
+                                            <span className="hidden xs:inline">Sonraki</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 sm:ml-2">
+                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         {/* Fiyat Tablosu */}
                         <div className="mt-16 bg-white border border-border rounded-lg overflow-hidden">

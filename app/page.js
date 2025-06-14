@@ -13,6 +13,7 @@ import { ImageGallery } from '../components/ui/image-gallery';
 import turkiyeIlIlce from '../data/turkiye-il-ilce';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLocation } from './context/location-context';
+import { QuoteModal } from '@/components/quote/quote-modal';
 
 // Örnek veri
 const featuredVenues = [
@@ -219,31 +220,15 @@ function FeaturedVenueCard({ title, images, location, price, discount, rating })
         </Link>
       </div>
 
-      <Modal
+      <QuoteModal
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
-        title={quoteSubmitted ? "Teşekkürler!" : "Ücretsiz Teklif Alın"}
-      >
-        {quoteSubmitted ? (
-          <div className="py-6 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Talebiniz Alındı!</h3>
-            <p className="text-sm text-gray-500">
-              Teklif talebiniz başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.
-            </p>
-          </div>
-        ) : (
-          <RequestQuoteForm
-            venueName={title}
-            onSuccess={handleQuoteSuccess}
-            onClose={() => setIsQuoteModalOpen(false)}
-          />
-        )}
-      </Modal>
+        venue={{
+          id: 'homepage',
+          name: title,
+          district_name: 'Genel Teklif'
+        }}
+      />
     </>
   );
 }
@@ -391,10 +376,10 @@ export default function Home() {
         <div className="container mx-auto px-4 py-16 md:py-24 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text mb-6">
-              Hayalinizdeki Davet Salonunu Kolayca Bulun
+              Hayalinizdeki Davet Evini Kolayca Bulun
             </h1>
             <p className="text-darkgray text-lg mb-8">
-              Binlerce davet salonu ve hizmet firması arasından size en uygun seçenekleri keşfedin, hemen fiyat teklifi alın!
+              Binlerce davet evi ve hizmet firması arasından size en uygun seçenekleri keşfedin, hemen fiyat teklifi alın!
             </p>
 
             {/* Arama Bölümü */}
@@ -563,91 +548,6 @@ export default function Home() {
                 </div>
               </Link>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gerçek Nişan Hikayeleri */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-text mb-4">Gerçek Nişan Hikayeleri</h2>
-            <p className="text-darkgray max-w-2xl mx-auto">
-              Nişanlanan ve söz yüzüklerini takan mutlu çiftlerin hikayelerinden ilham alın.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="group relative rounded-lg overflow-hidden shadow-md">
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src="/images/person-1.webp"
-                  alt="Şule ve Erhan'ın nişan hikayesi"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="text-sm sm:text-base font-medium leading-tight">
-                  Ne Yıllar Ne Yollar Aşklarına Engel Olabildi: Şule & Erhan
-                </h3>
-              </div>
-            </div>
-
-            <div className="group relative rounded-lg overflow-hidden shadow-md">
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src="/images/person-2.webp"
-                  alt="Ayşe ve Mehmet'in nişan hikayesi"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="text-sm sm:text-base font-medium leading-tight">
-                  Onları Bir Söz Yüzüğü Değil Kalplerindeki Sözler Bağladı: Ayşe & Mehmet
-                </h3>
-              </div>
-            </div>
-
-            <div className="group relative rounded-lg overflow-hidden shadow-md">
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src="/images/person-3.jpg"
-                  alt="Elif ve Burak'ın nişan hikayesi"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="text-sm sm:text-base font-medium leading-tight">
-                  Sözlerini Bir Ömür Tutmak Üzere Yüzük Taktılar: Elif & Burak
-                </h3>
-              </div>
-            </div>
-
-            <div className="group relative rounded-lg overflow-hidden shadow-md">
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src="/images/person-4.jpg"
-                  alt="Zeynep ve Can'ın nişan hikayesi"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="text-sm sm:text-base font-medium leading-tight">
-                  Sıcacık Bir Söz Töreninde Hayatlarını Birleştirdiler: Zeynep & Can
-                </h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center mt-8">
-            <Link href="/gercek-nisan-hikayeleri" className="text-primary font-medium hover:underline flex items-center justify-center">
-              Tüm Nişan Hikayelerini Keşfedin
-              <ChevronRight size={16} className="ml-1" />
-            </Link>
           </div>
         </div>
       </section>

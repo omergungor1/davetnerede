@@ -9,7 +9,6 @@ export async function POST(request) {
             user_id,
             name,
             description,
-            tagline,
             capacity,
             phone,
             email,
@@ -25,7 +24,8 @@ export async function POST(request) {
             team_members,
             packages,
             profile_image_url,
-            owner_name
+            owner_name,
+            password
         } = await request.json();
 
         // Doğrulama kontrolleri
@@ -63,8 +63,8 @@ export async function POST(request) {
                 features,
                 services,
                 profile_image_url,
-                tagline,
-                owner_name
+                owner_name,
+                password
             })
             .select('id')
             .single();

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import Link from 'next/link';
-import turkiyeIlIlce from '../../data/turkiye-il-ilce';
 import { formatPhoneNumber } from '../ui/utils';
 import { useAuth } from '@/app/context/auth-context';
 import toast from 'react-hot-toast';
@@ -25,8 +24,6 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
         adSoyad: '',
         email: '',
         telefon: '',
-        il: '',
-        ilce: '',
         sifre: '',
         terms: false
     });
@@ -34,41 +31,20 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
     const [registerStep, setRegisterStep] = useState(1);
     const [firstStepValid, setFirstStepValid] = useState(false);
     const [secondStepValid, setSecondStepValid] = useState(false);
-    const [ilceler, setIlceler] = useState([]);
 
     // İlk adımın geçerli olup olmadığını kontrol eden fonksiyon
     useEffect(() => {
         const { adSoyad, email, telefon } = registerData;
-        setFirstStepValid(adSoyad.trim() !== '' && email.trim() !== '' && telefon.trim() !== '');
-    }, [registerData.adSoyad, registerData.email, registerData.telefon]);
+        setFirstStepValid(adSoyad.trim() !== '' && email.trim() !== '');
+    }, [registerData.adSoyad, registerData.email]);
 
     // İkinci adımın geçerli olup olmadığını kontrol eden fonksiyon
     useEffect(() => {
-        const { il, sifre, terms } = registerData;
-        setSecondStepValid(il.trim() !== '' && sifre.trim() !== '' && terms === true);
-    }, [registerData.il, registerData.sifre, registerData.terms]);
+        const { telefon, sifre, terms } = registerData;
+        setSecondStepValid(telefon.trim() !== '' && sifre.trim() !== '' && terms === true);
+    }, [registerData.telefon, registerData.sifre, registerData.terms]);
 
-    // İl değiştiğinde ilçeleri güncelle
-    useEffect(() => {
-        if (registerData.il) {
-            const selectedProvince = turkiyeIlIlce.provinces.find(
-                p => p.name === registerData.il
-            );
 
-            if (selectedProvince) {
-                // Bu ile ait tüm ilçeleri filtrele
-                const districts = turkiyeIlIlce.districts.filter(
-                    d => d.province_id === selectedProvince.id
-                ).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
-
-                setIlceler(districts);
-                // İl değiştiğinde ilçe seçimini sıfırla
-                setRegisterData(prev => ({ ...prev, ilce: '' }));
-            }
-        } else {
-            setIlceler([]);
-        }
-    }, [registerData.il]);
 
     // Kullanıcı zaten giriş yapmışsa modalları kapatma kontrolü
     useEffect(() => {
@@ -158,27 +134,12 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
         setAuthError('');
 
         try {
-            // Seçilen il ve ilçenin ID ve isimlerini bul
-            const selectedProvince = turkiyeIlIlce.provinces.find(p => p.name === registerData.il);
-            let selectedDistrict = null;
-
-            // Kullanıcı ilçe seçmişse ilçeyi bul
-            if (registerData.ilce) {
-                selectedDistrict = turkiyeIlIlce.districts.find(
-                    d => d.name === registerData.ilce && d.province_id === selectedProvince?.id
-                );
-            }
-
             const { data, error } = await signUp(
                 registerData.email.trim(),
                 registerData.sifre.trim(),
                 {
                     full_name: registerData.adSoyad.trim(),
                     phone: registerData.telefon,
-                    city_id: selectedProvince?.id || null,
-                    city_name: selectedProvince?.name || '',
-                    district_id: selectedDistrict?.id || null,
-                    district_name: selectedDistrict?.name || ''
                 }
             );
 
@@ -187,7 +148,7 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
                 toast.error(error.message || 'Kayıt olurken bir hata oluştu');
             } else {
                 setIsSubmitSuccess(true);
-                toast.success('Kayıt işlemi başarılı! Lütfen e-posta adresinizi kontrol ediniz.');
+                toast.success('Kayıt işlemi başarılı! Aramıza hoşgeldiniz.');
 
                 // Başarılı kayıt sonrası 3 saniye sonra kapatma
                 setTimeout(() => {
@@ -323,7 +284,7 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">Kayıt İşlemi Başarılı!</h3>
                         <p className="text-sm text-gray-500 mb-4">
-                            E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen hesabınızı aktifleştirmek için e-postanızı kontrol edin.
+                            Davet Evi Bul ailesine hoşgeldiniz. Sizi aramızda görmekten çok güzel.
                         </p>
                     </div>
                 ) : (
@@ -366,24 +327,6 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
                                         />
                                         {registerData.email === '' && <p className="text-xs text-gray-500 mt-1">Geçerli bir e-posta adresi gereklidir</p>}
                                     </div>
-
-                                    <div>
-                                        <label htmlFor="reg-telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
-                                        <input
-                                            type="tel"
-                                            id="reg-telefon"
-                                            name="telefon"
-                                            maxLength={14}
-                                            value={registerData.telefon}
-                                            onChange={handleRegisterChange}
-                                            required
-                                            placeholder="05XX XXX XX XX"
-                                            className="w-full border border-border rounded-md p-2 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            disabled={isLoading}
-                                        />
-                                        {registerData.telefon.trim() === '' && <p className="text-xs text-gray-500 mt-1">Geçerli bir telefon numarası gereklidir</p>}
-                                    </div>
-
                                     <div className="pt-4">
                                         <Button
                                             type="button"
@@ -404,51 +347,23 @@ export function AuthModals({ isLoginOpen, isRegisterOpen, onClose }) {
                                     }`}
                             >
                                 <div className="space-y-4">
+
                                     <div>
-                                        <label htmlFor="il" className="block text-sm font-medium text-text mb-1">Cemiyet Yapacağınız İl</label>
-                                        <select
-                                            id="il"
-                                            name="il"
-                                            value={registerData.il}
+                                        <label htmlFor="reg-telefon" className="block text-sm font-medium text-text mb-1">Telefon Numarası</label>
+                                        <input
+                                            type="tel"
+                                            id="reg-telefon"
+                                            name="telefon"
+                                            maxLength={14}
+                                            value={registerData.telefon}
                                             onChange={handleRegisterChange}
                                             required
+                                            placeholder="05XX XXX XX XX"
                                             className="w-full border border-border rounded-md p-2 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                                             disabled={isLoading}
-                                        >
-                                            <option value="">Seçiniz</option>
-                                            {turkiyeIlIlce.provinces.map((province) => (
-                                                <option key={province.id} value={province.name}>
-                                                    {province.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {registerData.il === '' && <p className="text-xs text-gray-500 mt-1">Lütfen bir il seçin</p>}
+                                        />
+                                        {registerData.telefon.trim() === '' && <p className="text-xs text-gray-500 mt-1">Geçerli bir telefon numarası gereklidir</p>}
                                     </div>
-
-                                    <div>
-                                        <label htmlFor="ilce" className="block text-sm font-medium text-text mb-1">Cemiyet Yapacağınız İlçe</label>
-                                        <select
-                                            id="ilce"
-                                            name="ilce"
-                                            value={registerData.ilce}
-                                            onChange={handleRegisterChange}
-                                            className="w-full border border-border rounded-md p-2 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            disabled={isLoading || !registerData.il}
-                                        >
-                                            <option value="">Seçiniz</option>
-                                            {ilceler.map((district) => (
-                                                <option key={district.id} value={district.name}>
-                                                    {district.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {!registerData.il
-                                                ? 'Önce il seçiniz'
-                                                : 'İlçe seçimi isteğe bağlıdır'}
-                                        </p>
-                                    </div>
-
                                     <div>
                                         <label htmlFor="reg-sifre" className="block text-sm font-medium text-text mb-1">Şifre</label>
                                         <input

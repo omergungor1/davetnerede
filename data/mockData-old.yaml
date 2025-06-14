@@ -1,0 +1,40 @@
+const mockTeklifler = [
+        { id: 1, business_id: 1, profile_id: 5, musteri: "Ahmet Yılmaz", telefon: '0555 555 55 55', paket: "Başlangıç", paket_id: 1, tarih: "12.08.2023", durum: "Beklemede", fiyat: 12500, isdeleted: false },
+        { id: 2, business_id: 1, profile_id: 6, musteri: "Zeynep Kaya", telefon: '0555 555 55 55', paket: "Orta", paket_id: 2, tarih: "05.09.2023", durum: "Gönderildi", fiyat: 15800, isdeleted: false },
+        { id: 3, business_id: 1, profile_id: 7, musteri: "Mehmet Demir", telefon: '0555 555 55 55', paket: "Herşey Dahil", paket_id: 3, tarih: "18.09.2023", durum: "Gönderildi", fiyat: 8750, isdeleted: false },
+        { id: 4, business_id: 1, profile_id: 8, musteri: "Ayşe Çelik", telefon: '0555 555 55 55', paket: "Orta", paket_id: 2, tarih: "22.09.2023", durum: "Beklemede", fiyat: 22000, isdeleted: false },
+        { id: 5, business_id: 1, profile_id: 9, musteri: "Fatma Şahin", telefon: '0555 555 55 55', paket: "Herşey Dahil", paket_id: 3, tarih: "01.10.2023", durum: "Gönderildi", fiyat: 18500, isdeleted: false }
+    ];
+
+    const mockRezervasyon = [
+        { id: 1, business_id: 1, profile_id: 5, musteri: "Ali Veli", telefon: "0555 555 55 55", paket: "Başlangıç", paket_id: 1, tarih: "15.11.2023", misafirSayisi: 250, odemeDurumu: "Kapora Alındı", tutar: 35000, type: "Ön Rezervasyon", isdeleted: false },
+        { id: 2, business_id: 1, profile_id: 6, musteri: "Hande Doğan", telefon: "0533 333 33 33", paket: "Orta", paket_id: 2, tarih: "22.12.2023", misafirSayisi: 120, odemeDurumu: "Tamamı Ödendi", tutar: 22000, type: "Ön Rezervasyon", isdeleted: false },
+        { id: 3, business_id: 1, profile_id: 3, musteri: "Serkan Öz", telefon: "0544 444 44 44", paket: "Herşey Dahil", paket_id: 3, tarih: "05.01.2024", misafirSayisi: 180, odemeDurumu: "Kapora Alındı", tutar: 28500, type: "Ön Rezervasyon", isdeleted: false },
+        { id: 4, business_id: 1, profile_id: 9, musteri: "Ece Güneş", telefon: "0522 222 22 22", paket: "Orta", paket_id: 2, tarih: "14.02.2024", misafirSayisi: 300, odemeDurumu: "Beklemede", tutar: 42000, type: "Ön Rezervasyon", isdeleted: false }
+    ];
+
+    const mockRandevular = [
+        { id: 1, business_id: 1, profile_id: 5, musteri: "Selin Öztürk", telefon: "0555 111 11 11", tarih: "08.10.2023", saat: "14:30", durum: "Tamamlandı", isdeleted: false },
+        { id: 2, business_id: 1, profile_id: 6, musteri: "Hakan Demirci", telefon: "0533 222 22 22", tarih: "12.10.2023", saat: "11:00", durum: "Beklemede", isdeleted: false },
+        { id: 3, business_id: 1, profile_id: 7, musteri: "Nihan Aktaş", telefon: "0544 333 33 33", tarih: "15.10.2023", saat: "16:00", durum: "Beklemede", isdeleted: false },
+        { id: 4, business_id: 1, profile_id: 9, musteri: "Berk Yıldız", telefon: "0522 444 44 44", tarih: "18.10.2023", saat: "10:30", durum: "İptal Edildi", isdeleted: false }
+    ];
+
+    const [mockSorular, setMockSorular] = useState([
+        { id: 1, business_id: 1, profile_id: 5, musteri: "Ceyda Kılıç", tarih: "01.10.2023", soru: "Nişan tarihini değiştirmek istiyoruz, ne yapmamız gerekiyor?", cevap: "Merhaba, en az 2 hafta önceden bildirmeniz durumunda tarih değişikliği yapabiliriz.", isdeleted: false },
+        { id: 2, business_id: 1, profile_id: 6, musteri: "Emre Aydın", tarih: "03.10.2023", soru: "Vejetaryen misafirlerimiz için özel menü seçeneğiniz var mı?", cevap: null, isdeleted: false },
+        { id: 3, business_id: 1, profile_id: 7, musteri: "Pınar Yücel", tarih: "04.10.2023", soru: "Düğün fotoğrafçısı ve kameraman için ekstra ücret ödememiz gerekiyor mu?", cevap: "Tüm paketlerimizde fotoğrafçı ve kameraman hizmeti dahildir, ekstra ücret ödemenize gerek yok.", isdeleted: false },
+        { id: 4, business_id: 1, profile_id: 9, musteri: "Kaan Işık", tarih: "05.10.2023", soru: "Davet salonunun maksimum kapasitesi nedir?", cevap: "Ana salonumuz 400 kişi kapasitesine sahiptir.", isdeleted: false }
+    ]);
+
+    const mockStories = [
+        { id: 1, business_id: 1, name: "Merve & Can'ın Bitmeyen Aşk Hikayeleri", category: 'nisan', tarih: "05.08.2023", hikaye: "2 yıllık bir ilişkinin ardından Can'ın sürpriz evlilik teklifi ile nişanlandık. Tekliften 6 ay sonra ise muhteşem bir düğünle hayatımızı birleştirdik. Düğün mekanı olarak Sunset Garden'ı seçtiğimiz için çok mutluyuz. Harika manzara ve profesyonel hizmet sayesinde unutulmaz bir gün yaşadık. Tüm misafirlerimiz de mekanı ve organizasyonu çok beğendi.", image: "/images/person-1.webp", isdeleted: false },
+        { id: 2, business_id: 1, name: "Zeynep & Arda'nın İlham Veren Hikayesi", category: 'soz-nisan', tarih: "15.09.2023", hikaye: "Üniversitede tanıştık ve 5 yıl boyunca ayrı şehirlerde yaşadıktan sonra nihayet hayatlarımızı birleştirdik. Uzun yıllar süren uzak mesafe ilişkimiz, sabır ve sevgiyle güçlendi. Nişanımızı 100 kişinin katıldığı samimi bir törenle kutladık. Düğün günümüzde hava şartları biraz zorladı ama personelin hızlı çözümleriyle her şey harika geçti. Balayımızı İtalya'da geçirdik ve şimdi birlikte yeni hayatımıza adım attık.", image: "/images/person-4.jpg", isdeleted: false }
+    ];
+
+        const [mockComments, setMockComments] = useState([
+        { id: 1, business_id: 1, profile_id: 2, musteri: "Deniz & Murat", tarih: "25.08.2023", puan: 5, comment: "Harika bir düğün oldu, herşey için çok teşekkürler!", answer: "Teşekkürler, umarım gelecekte  tekrar görüşelim.", isdeleted: false },
+        { id: 2, business_id: 1, profile_id: 6, musteri: "Sevgi & Onur", tarih: "12.09.2023", puan: 4, comment: "Yemekler muhteşemdi, organizasyon çok başarılıydı. Daha iyi olabilecek tek şey parkın biraz daha geniş olması olabilirdi.", answer: "Teşekkürler, hayat boyu mutluluklar dileriz.", isdeleted: false },
+        { id: 3, business_id: 1, profile_id: 7, musteri: "Elif & Burak", tarih: "18.09.2023", puan: 3, comment: "Mekan çok güzeldi fakat hizmet konusunda biraz geç kalındı.", isdeleted: false },
+        { id: 4, business_id: 1, profile_id: 9, musteri: "Gamze & Alper", tarih: "30.09.2023", puan: 5, comment: "Hayalimizdeki düğünü gerçekleştirdik, herşey kusursuzdu!", isdeleted: false }
+    ]);

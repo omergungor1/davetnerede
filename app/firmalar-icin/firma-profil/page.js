@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/app/context/auth-context';
@@ -13,7 +13,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import turkiyeIlIlce from '@/data/turkiye-il-ilce';
 import { CallMeForm } from '@/components/ui/call-me-form';
-import { StoryModal } from '@/components/modals/StoryModal';
 import { Calendar } from '@/components/ui/calendar';
 import { EventDetailsModal } from '@/components/modals/EventDetailsModal';
 import { RandevuModal } from '@/components/modals/RandevuModal';
@@ -22,103 +21,260 @@ import { SearchableTable } from '@/components/ui/SearchableTable';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { ProfileImageUploader } from '@/components/ui/ProfileImageUploader';
 import { TeklifModal } from '@/components/modals/TeklifModal';
+import { SoruCevapModal } from '@/components/modals/SoruCevapModal';
+import { TagInput } from '@/components/ui/TagInput';
 
 export default function FirmaProfilPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, isCompanyAccount, signOut, isLoading: authLoading } = useAuth();
+    const activeTab = searchParams.get('tab') || 'profil';
 
-    // Mock veriler
-    const mockTeklifler = [
-        { id: 1, musteri: "Ahmet Yılmaz", telefon: '0555 555 55 55', paket: "Başlangıç", tarih: "12.08.2023", durum: "Beklemede", fiyat: 12500 },
-        { id: 2, musteri: "Zeynep Kaya", telefon: '0555 555 55 55', paket: "Orta", tarih: "05.09.2023", durum: "Gönderildi", fiyat: 15800 },
-        { id: 3, musteri: "Mehmet Demir", telefon: '0555 555 55 55', paket: "Herşey Dahil", tarih: "18.09.2023", durum: "Gönderildi", fiyat: 8750 },
-        { id: 4, musteri: "Ayşe Çelik", telefon: '0555 555 55 55', paket: "Orta", tarih: "22.09.2023", durum: "Beklemede", fiyat: 22000 },
-        { id: 5, musteri: "Fatma Şahin", telefon: '0555 555 55 55', paket: "Herşey Dahil", tarih: "01.10.2023", durum: "Gönderildi", fiyat: 18500 }
-    ];
-
-    const mockRezervasyon = [
-        { id: 1, musteri: "Ali Veli", telefon: "0555 555 55 55", paket: "Başlangıç", tarih: "15.11.2023", misafirSayisi: 250, odemeDurumu: "Kapora Alındı", tutar: 35000, type: "Ön Rezervasyon" },
-        { id: 2, musteri: "Hande Doğan", telefon: "0533 333 33 33", paket: "Orta", tarih: "22.12.2023", misafirSayisi: 120, odemeDurumu: "Tamamı Ödendi", tutar: 22000, type: "Ön Rezervasyon" },
-        { id: 3, musteri: "Serkan Öz", telefon: "0544 444 44 44", paket: "Herşey Dahil", tarih: "05.01.2024", misafirSayisi: 180, odemeDurumu: "Kapora Alındı", tutar: 28500, type: "Ön Rezervasyon" },
-        { id: 4, musteri: "Ece Güneş", telefon: "0522 222 22 22", paket: "Orta", tarih: "14.02.2024", misafirSayisi: 300, odemeDurumu: "Beklemede", tutar: 42000, type: "Ön Rezervasyon" }
-    ];
-
-    const mockRandevular = [
-        { id: 1, musteri: "Selin Öztürk", telefon: "0555 111 11 11", tarih: "08.10.2023", saat: "14:30", durum: "Tamamlandı" },
-        { id: 2, musteri: "Hakan Demirci", telefon: "0533 222 22 22", tarih: "12.10.2023", saat: "11:00", durum: "Beklemede" },
-        { id: 3, musteri: "Nihan Aktaş", telefon: "0544 333 33 33", tarih: "15.10.2023", saat: "16:00", durum: "Beklemede" },
-        { id: 4, musteri: "Berk Yıldız", telefon: "0522 444 44 44", tarih: "18.10.2023", saat: "10:30", durum: "İptal Edildi" }
-    ];
-
-    const mockSorular = [
-        { id: 1, musteri: "Ceyda Kılıç", tarih: "01.10.2023", soru: "Nişan tarihini değiştirmek istiyoruz, ne yapmamız gerekiyor?", cevap: "Merhaba, en az 2 hafta önceden bildirmeniz durumunda tarih değişikliği yapabiliriz." },
-        { id: 2, musteri: "Emre Aydın", tarih: "03.10.2023", soru: "Vejetaryen misafirlerimiz için özel menü seçeneğiniz var mı?", cevap: null },
-        { id: 3, musteri: "Pınar Yücel", tarih: "04.10.2023", soru: "Düğün fotoğrafçısı ve kameraman için ekstra ücret ödememiz gerekiyor mu?", cevap: "Tüm paketlerimizde fotoğrafçı ve kameraman hizmeti dahildir, ekstra ücret ödemenize gerek yok." },
-        { id: 4, musteri: "Kaan Işık", tarih: "05.10.2023", soru: "Davet salonunun maksimum kapasitesi nedir?", cevap: "Ana salonumuz 400 kişi kapasitesine sahiptir." }
-    ];
-
-    const mockComments = [
-        { id: 1, musteri: "Deniz & Murat", tarih: "25.08.2023", puan: 5, comment: "Harika bir düğün oldu, herşey için çok teşekkürler!", answer: "Teşekkürler, umarım gelecekte  tekrar görüşelim." },
-        { id: 2, musteri: "Sevgi & Onur", tarih: "12.09.2023", puan: 4, comment: "Yemekler muhteşemdi, organizasyon çok başarılıydı. Daha iyi olabilecek tek şey parkın biraz daha geniş olması olabilirdi.", answer: "Teşekkürler, hayat boyu mutluluklar dileriz." },
-        { id: 3, musteri: "Elif & Burak", tarih: "18.09.2023", puan: 3, comment: "Mekan çok güzeldi fakat hizmet konusunda biraz geç kalındı." },
-        { id: 4, musteri: "Gamze & Alper", tarih: "30.09.2023", puan: 5, comment: "Hayalimizdeki düğünü gerçekleştirdik, herşey kusursuzdu!" }
-    ];
-
-    const mockStories = [
-        { id: 1, name: "Merve & Can'ın Bitmeyen Aşk Hikayeleri", category: 'nisan', tarih: "05.08.2023", hikaye: "2 yıllık bir ilişkinin ardından Can'ın sürpriz evlilik teklifi ile nişanlandık. Tekliften 6 ay sonra ise muhteşem bir düğünle hayatımızı birleştirdik. Düğün mekanı olarak Sunset Garden'ı seçtiğimiz için çok mutluyuz. Harika manzara ve profesyonel hizmet sayesinde unutulmaz bir gün yaşadık. Tüm misafirlerimiz de mekanı ve organizasyonu çok beğendi.", image: "/images/person-1.webp" },
-        { id: 2, name: "Zeynep & Arda'nın İlham Veren Hikayesi", category: 'soz-nisan', tarih: "15.09.2023", hikaye: "Üniversitede tanıştık ve 5 yıl boyunca ayrı şehirlerde yaşadıktan sonra nihayet hayatlarımızı birleştirdik. Uzun yıllar süren uzak mesafe ilişkimiz, sabır ve sevgiyle güçlendi. Nişanımızı 100 kişinin katıldığı samimi bir törenle kutladık. Düğün günümüzde hava şartları biraz zorladı ama personelin hızlı çözümleriyle her şey harika geçti. Balayımızı İtalya'da geçirdik ve şimdi birlikte yeni hayatımıza adım attık.", image: "/images/person-4.jpg" }
-    ];
-
-    const [loading, setLoading] = useState(false);
+    // State tanımlamaları
+    const [loading, setLoading] = useState(true);
+    const [submitLoading, setSubmitLoading] = useState(false);
     const [fetchLoading, setFetchLoading] = useState(true);
+    const [fetchError, setFetchError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [businessData, setBusinessData] = useState(null);
+
+    // Firma profil state'leri
     const [firmaProfil, setFirmaProfil] = useState({
         firma_adi: '',
-        email: '',
-        telefon: '',
+        aciklama: '',
         adres: '',
-        il_id: null,
-        il_adi: '',
-        ilce_id: null,
-        ilce_adi: '',
-        aciklama: ''
+        telefon: '',
+        email: '',
+        website: '',
+        instagram: '',
+        facebook: '',
+        twitter: '',
+        ozellikler: [],
+        hizmetler: []
     });
-    const [isEditing, setIsEditing] = useState(false);
     const [ilceler, setIlceler] = useState([]);
-    const [fetchError, setFetchError] = useState(null);
+    const [profileImage, setProfileImage] = useState(null);
+    const [businessImages, setBusinessImages] = useState([]);
+
+    // Veri state'leri
+    const [teklifler, setTeklifler] = useState([]);
+    const [rezervasyonlar, setRezervasyonlar] = useState([]);
+    const [randevular, setRandevular] = useState([]);
+    const [sorular, setSorular] = useState([]);
+    const [yorumlar, setYorumlar] = useState([]);
+
+    // Modal state'leri
     const [modalOpen, setModalOpen] = useState(false);
-    const [storyModalOpen, setStoryModalOpen] = useState(false);
     const [eventDetailsModalOpen, setEventDetailsModalOpen] = useState(false);
     const [randevuModalOpen, setRandevuModalOpen] = useState(false);
     const [rezervasyonModalOpen, setRezervasyonModalOpen] = useState(false);
+    const [teklifModalOpen, setTeklifModalOpen] = useState(false);
+    const [soruCevapModalOpen, setSoruCevapModalOpen] = useState(false);
+
+    // Seçim state'leri
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedEvents, setSelectedEvents] = useState([]);
-    const [rezervasyonView, setRezervasyonView] = useState('list'); // 'list' veya 'calendar'
-    const [randevuView, setRandevuView] = useState('list'); // 'list' veya 'calendar'
-    const [profileImage, setProfileImage] = useState(null);
-    const [businessImages, setBusinessImages] = useState([]);
-    const [savingImages, setSavingImages] = useState(false);
-    const [teklifModalOpen, setTeklifModalOpen] = useState(false);
     const [selectedTeklif, setSelectedTeklif] = useState(null);
-    const [teklifler, setTeklifler] = useState(mockTeklifler);
     const [selectedRezervasyon, setSelectedRezervasyon] = useState(null);
     const [selectedRandevu, setSelectedRandevu] = useState(null);
+
+    // Görünüm state'leri
+    const [rezervasyonView, setRezervasyonView] = useState('list'); // 'list' veya 'calendar'
+    const [randevuView, setRandevuView] = useState('list'); // 'list' veya 'calendar'
     const [randevuIsEdit, setRandevuIsEdit] = useState(false);
     const [rezervasyonModalMode, setRezervasyonModalMode] = useState('add'); // 'add', 'edit', 'view'
 
-    // Yorum yanıtlama state'leri
+    // Yorum ve soru state'leri
     const [commentReplies, setCommentReplies] = useState({});
-    const [replyInProgress, setReplyInProgress] = useState(false);
+    const [replyInProgress, setReplyInProgress] = useState({});
+    const [soruYanitlar, setSoruYanitlar] = useState({});
+    const [yanitGonderiliyor, setYanitGonderiliyor] = useState(false);
 
-    // Takvim için randevu ve rezervasyon verilerini hazırla
-    const randevuEvents = mockRandevular.map(randevu => ({
-        ...randevu,
-        type: 'randevu'
-    }));
+    // Verileri getir
+    useEffect(() => {
+        // Kullanıcı veya işletme hesabı yoksa veri getirme
+        if (!user || authLoading) {
+            return;
+        }
 
-    const rezervasyonEvents = mockRezervasyon.map(rezervasyon => ({
-        ...rezervasyon,
-        type: 'rezervasyon'
-    }));
+        // Kullanıcı tipini kontrol et - işletme hesabı değilse veri getirme
+        if (!isCompanyAccount()) {
+            return;
+        }
+
+        // Veri getirme işlemi daha önce başlatıldıysa tekrar yapma
+        if (loading) {
+            return;
+        }
+
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const businessId = '1'; // TODO: Dinamik olarak alınacak
+
+                console.log('Veriler getiriliyor...');
+
+                // Tüm verileri paralel olarak getir
+                const [tekliflerRes, rezervasyonlarRes, randevularRes, sorularRes, yorumlarRes] = await Promise.all([
+                    fetch(`/api/business/${businessId}/offers`).catch(e => ({ ok: false, json: () => Promise.resolve([]) })),
+                    fetch(`/api/business/${businessId}/reservations`).catch(e => ({ ok: false, json: () => Promise.resolve([]) })),
+                    fetch(`/api/business/${businessId}/appointments`).catch(e => ({ ok: false, json: () => Promise.resolve([]) })),
+                    fetch(`/api/business/${businessId}/questions`).catch(e => ({ ok: false, json: () => Promise.resolve([]) })),
+                    fetch(`/api/business/${businessId}/reviews`).catch(e => ({ ok: false, json: () => Promise.resolve([]) }))
+                ]);
+
+                // Yanıtları JSON'a çevir
+                const [tekliflerData, rezervasyonlarData, randevularData, sorularData, yorumlarData] = await Promise.all([
+                    tekliflerRes.json(),
+                    rezervasyonlarRes.json(),
+                    randevularRes.json(),
+                    sorularRes.json(),
+                    yorumlarRes.json()
+                ]);
+
+                // Hata kontrolü
+                if (tekliflerRes.ok) setTeklifler(tekliflerData);
+                if (rezervasyonlarRes.ok) setRezervasyonlar(rezervasyonlarData);
+                if (randevularRes.ok) setRandevular(randevularData);
+                if (sorularRes.ok) setSorular(sorularData);
+                if (yorumlarRes.ok) setYorumlar(yorumlarData);
+
+                console.log('Veriler başarıyla getirildi');
+            } catch (error) {
+                console.error('Veri getirme hatası:', error);
+                toast.error('Veriler getirilirken bir hata oluştu');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // İlk yükleme sırasında verileri getir
+        fetchData();
+    }, [user, authLoading, isCompanyAccount, loading]);
+
+    // Yorum cevaplama fonksiyonu
+    const handleYorumCevap = async (yorumId, cevap) => {
+        try {
+            const businessId = '1'; // TODO: Dinamik olarak alınacak
+            const response = await fetch(`/api/business/${businessId}/reviews`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: yorumId, answer: cevap })
+            });
+
+            if (response.ok) {
+                // Yorumları güncelle
+                setYorumlar(prevYorumlar =>
+                    prevYorumlar.map(yorum =>
+                        yorum.id === yorumId ? { ...yorum, cevap } : yorum
+                    )
+                );
+                toast.success('Yorum cevabı güncellendi');
+            } else {
+                throw new Error('Yorum cevabı güncellenemedi');
+            }
+        } catch (error) {
+            console.error('Yorum cevaplama hatası:', error);
+            toast.error('Yorum cevabı güncellenirken bir hata oluştu');
+        }
+    };
+
+    // Soru cevaplama fonksiyonu
+    const handleSoruCevap = async (soruId, cevap) => {
+        try {
+            const businessId = '1'; // TODO: Dinamik olarak alınacak
+            const response = await fetch(`/api/business/${businessId}/questions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: soruId, answer: cevap })
+            });
+
+            if (response.ok) {
+                // Soruları güncelle
+                setSorular(prevSorular =>
+                    prevSorular.map(soru =>
+                        soru.id === soruId ? { ...soru, cevap } : soru
+                    )
+                );
+                toast.success('Soru cevabı güncellendi');
+            } else {
+                throw new Error('Soru cevabı güncellenemedi');
+            }
+        } catch (error) {
+            console.error('Soru cevaplama hatası:', error);
+            toast.error('Soru cevabı güncellenirken bir hata oluştu');
+        }
+    };
+
+
+    // Teklif silme fonksiyonu
+    const handleTeklifSil = async (teklifId) => {
+        try {
+            const businessId = '1'; // TODO: Dinamik olarak alınacak
+            const response = await fetch(`/api/business/${businessId}/offers?id=${teklifId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Teklifleri güncelle
+                setTeklifler(prevTeklifler =>
+                    prevTeklifler.filter(teklif => teklif.id !== teklifId)
+                );
+                toast.success('Teklif silindi');
+            } else {
+                throw new Error('Teklif silinemedi');
+            }
+        } catch (error) {
+            console.error('Teklif silme hatası:', error);
+            toast.error('Teklif silinirken bir hata oluştu');
+        }
+    };
+
+    // Rezervasyon silme fonksiyonu
+    const handleRezervasyonSil = async (rezervasyonId) => {
+        try {
+            const businessId = '1'; // TODO: Dinamik olarak alınacak
+            const response = await fetch(`/api/business/${businessId}/reservations?id=${rezervasyonId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Rezervasyonları güncelle
+                setRezervasyonlar(prevRezervasyonlar =>
+                    prevRezervasyonlar.filter(rezervasyon => rezervasyon.id !== rezervasyonId)
+                );
+                toast.success('Rezervasyon silindi');
+            } else {
+                throw new Error('Rezervasyon silinemedi');
+            }
+        } catch (error) {
+            console.error('Rezervasyon silme hatası:', error);
+            toast.error('Rezervasyon silinirken bir hata oluştu');
+        }
+    };
+
+    // Randevu silme fonksiyonu
+    const handleRandevuSil = async (randevuId) => {
+        try {
+            const businessId = '1'; // TODO: Dinamik olarak alınacak
+            const response = await fetch(`/api/business/${businessId}/appointments?id=${randevuId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Randevuları güncelle
+                setRandevular(prevRandevular =>
+                    prevRandevular.filter(randevu => randevu.id !== randevuId)
+                );
+                toast.success('Randevu silindi');
+            } else {
+                throw new Error('Randevu silinemedi');
+            }
+        } catch (error) {
+            console.error('Randevu silme hatası:', error);
+            toast.error('Randevu silinirken bir hata oluştu');
+        }
+    };
 
     // İl değiştiğinde ilçeleri güncelle
     useEffect(() => {
@@ -179,15 +335,22 @@ export default function FirmaProfilPage() {
         setFetchError(null);
 
         try {
-            // Önce businesses tablosundan veri çekmeyi deneyelim
+            // Businesses tablosundan veri çek
             const { data: businessData, error: businessError } = await supabase
                 .from('businesses')
                 .select('*')
                 .eq('owner_id', user.id)
                 .single();
 
-            if (!businessError && businessData) {
-                // İşletme verileri başarıyla alındı
+            if (businessError) {
+                console.error('İşletme verisi çekme hatası:', businessError);
+                throw businessError;
+            }
+
+
+            if (businessData) {
+                // İşletme verileri başarıyla alındı - ilk kaydı kullan
+                setBusinessData(businessData);
                 setFirmaProfil({
                     firma_adi: businessData.name || '',
                     email: businessData.email || user.email || '',
@@ -199,69 +362,52 @@ export default function FirmaProfilPage() {
                     ilce_adi: businessData.district_name || '',
                     aciklama: businessData.description || '',
                     kapasite: businessData.capacity || '',
-                    ozellikler: businessData.features || []
+                    ozellikler: businessData.features || [],
+                    hizmetler: businessData.services || [],
+                    id: businessData.id // İşletme ID'sini ekleyelim
                 });
 
                 // Profil resmini ayarla
-                if (businessData.profile_image) {
+                if (businessData.profile_image_url) {
                     setProfileImage({
                         id: 'profile',
-                        src: businessData.profile_image,
+                        src: businessData.profile_image_url,
                         name: 'profile.jpg'
                     });
                 }
 
-                // İşletme resimlerini ayarla
-                if (businessData.images && Array.isArray(businessData.images)) {
-                    setBusinessImages(businessData.images);
+                // İşletme resimlerini images tablosundan al
+                const { data: imagesData, error: imagesError } = await supabase
+                    .from('images')
+                    .select('*')
+                    .eq('business_id', businessData.id)
+                    .eq('is_active', true)
+                    .order('sequence', { ascending: true });
+
+                if (!imagesError && imagesData) {
+                    setBusinessImages(imagesData.map(img => ({
+                        id: img.id,
+                        url: img.url,
+                        sequence: img.sequence
+                    })));
                 }
-
-                return; // Veri başarıyla alındı, fonksiyonu sonlandır
-            }
-
-            // İşletme verisi yoksa veya hata varsa profiles tablosundan almayı dene
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                // Eğer gerçek bir veri hatası varsa (not found hariç)
-                if (profileError.code !== 'PGRST116') {
-                    console.error('Profil veri hatası:', profileError);
-                    throw profileError;
-                }
-            }
-
-            // Profil verileri başarıyla alındıysa kullan
-            if (profileData) {
+            } else {
+                // İşletme verisi yoksa boş form göster
                 setFirmaProfil({
-                    firma_adi: profileData.full_name || user.user_metadata?.full_name || '',
-                    email: profileData.email || user.email || '',
-                    telefon: profileData.phone || user.user_metadata?.phone || '',
-                    adres: profileData.address || user.user_metadata?.address || '',
-                    il_id: profileData.city_id || user.user_metadata?.city_id || null,
-                    il_adi: profileData.city_name || user.user_metadata?.city_name || '',
-                    ilce_id: profileData.district_id || user.user_metadata?.district_id || null,
-                    ilce_adi: profileData.district_name || user.user_metadata?.district_name || '',
-                    aciklama: profileData.description || user.user_metadata?.description || '',
+                    firma_adi: '',
+                    email: user.email || '',
+                    telefon: '',
+                    adres: '',
+                    il_id: null,
+                    il_adi: '',
+                    ilce_id: null,
+                    ilce_adi: '',
+                    aciklama: '',
+                    kapasite: '',
+                    ozellikler: [],
+                    hizmetler: []
                 });
-                return;
             }
-
-            // Hiçbir yerden veri alınamadıysa, user metadata'sını kullan
-            setFirmaProfil({
-                firma_adi: user.user_metadata?.full_name || '',
-                email: user.email || '',
-                telefon: user.user_metadata?.phone || '',
-                adres: user.user_metadata?.address || '',
-                il_id: user.user_metadata?.city_id || null,
-                il_adi: user.user_metadata?.city_name || '',
-                ilce_id: user.user_metadata?.district_id || null,
-                ilce_adi: user.user_metadata?.district_name || '',
-                aciklama: user.user_metadata?.description || '',
-            });
         } catch (error) {
             console.error('Firma profil verisi çekme hatası:', error);
             setFetchError('Profil bilgileri yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
@@ -304,43 +450,47 @@ export default function FirmaProfilPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitLoading(true);
 
         try {
-            // 1. Auth metadatasını güncelle
-            const { error: authError } = await supabase.auth.updateUser({
-                data: {
-                    full_name: firmaProfil.firma_adi,
-                    phone: firmaProfil.telefon,
-                    adres: firmaProfil.adres,
-                    city_id: firmaProfil.il_id,
-                    city_name: firmaProfil.il_adi,
-                    district_id: firmaProfil.ilce_id,
-                    district_name: firmaProfil.ilce_adi,
-                    aciklama: firmaProfil.aciklama
-                }
-            });
+            // 1. Auth metadatasını güncelle 
+            // const { error: authError } = await supabase.auth.updateUser({
+            //     data: {
+            //         full_name: firmaProfil.firma_adi,
+            //         phone: firmaProfil.telefon,
+            //     }
+            // });
 
-            if (authError) throw authError;
+            // if (authError) throw authError;
 
             // 2. Profiles tablosunu güncelle
-            const { error: profileError } = await supabase
-                .from('profiles')
+            // const { error: profileError } = await supabase
+            //     .from('profiles')
+            //     .upsert({
+            //         phone: firmaProfil.telefon
+            //     });
+
+            // if (profileError) throw profileError;
+
+            // 3. Businesses tablosunu güncelle
+            const { error: businessError } = await supabase
+                .from('businesses')
                 .upsert({
-                    id: user.id,
-                    full_name: firmaProfil.firma_adi,
-                    email: user.email,
+                    name: firmaProfil.firma_adi,
+                    description: firmaProfil.aciklama,
                     phone: firmaProfil.telefon,
-                    adres: firmaProfil.adres,
+                    address: firmaProfil.adres,
                     city_id: firmaProfil.il_id,
                     city_name: firmaProfil.il_adi,
                     district_id: firmaProfil.ilce_id,
                     district_name: firmaProfil.ilce_adi,
-                    aciklama: firmaProfil.aciklama,
+                    features: firmaProfil.ozellikler,
+                    services: firmaProfil.hizmetler,
                     updated_at: new Date().toISOString()
-                });
+                })
+                .eq('owner_id', user.id);
 
-            if (profileError) throw profileError;
+            if (businessError) throw businessError;
 
             toast.success('Firma bilgileriniz başarıyla güncellendi!');
             setIsEditing(false);
@@ -348,7 +498,7 @@ export default function FirmaProfilPage() {
             console.error('Firma profil güncelleme hatası:', error);
             toast.error('Profil güncellenirken bir hata oluştu.');
         } finally {
-            setLoading(false);
+            setSubmitLoading(false);
         }
     };
 
@@ -379,77 +529,51 @@ export default function FirmaProfilPage() {
     const handleSaveReply = (id) => {
         if (!commentReplies[id]?.trim()) return;
 
-        setReplyInProgress(true);
+        // Sadece işlem yapılan yorumun loading durumunu güncelleyelim
+        setReplyInProgress(prev => ({
+            ...prev,
+            [id]: true
+        }));
 
-        // Mock veri güncelleme - gerçek uygulamada API çağrısı yapılır
-        setTimeout(() => {
-            const updatedComments = mockComments.map(comment => {
-                if (comment.id === id) {
-                    return {
-                        ...comment,
-                        answer: commentReplies[id]
-                    };
-                }
-                return comment;
+        // API'ye istek gönder
+        handleYorumCevap(id, commentReplies[id])
+            .then(() => {
+                // Form state'ini temizle
+                setCommentReplies(prev => {
+                    const newState = { ...prev };
+                    delete newState[id];
+                    return newState;
+                });
+            })
+            .finally(() => {
+                // Sadece işlem yapılan yorumun loading durumunu sıfırlayalım
+                setReplyInProgress(prev => ({
+                    ...prev,
+                    [id]: false
+                }));
             });
-
-            // Normalde burada state güncellemesi olacak:
-            // setMockComments(updatedComments);
-
-            // Yanıt gönderildi bildirimi
-            toast.success('Yanıtınız kaydedildi!');
-
-            // Form state'ini temizle
-            setCommentReplies(prev => {
-                const newState = { ...prev };
-                delete newState[id];
-                return newState;
-            });
-
-            setReplyInProgress(false);
-        }, 500);
     };
 
     // Yanıt silme fonksiyonu
     const handleDeleteReply = (id) => {
-        setReplyInProgress(true);
+        // Sadece işlem yapılan yorumun loading durumunu güncelleyelim
+        setReplyInProgress(prev => ({
+            ...prev,
+            [id]: true
+        }));
 
-        // Mock veri güncelleme - gerçek uygulamada API çağrısı yapılır
-        setTimeout(() => {
-            const updatedComments = mockComments.map(comment => {
-                if (comment.id === id) {
-                    const { answer, ...rest } = comment;
-                    return rest;
-                }
-                return comment;
+        // Silme işlemi için API'ye istek gönder
+        handleYorumCevap(id, null)
+            .then(() => {
+                toast.success('Yanıt silindi!');
+            })
+            .finally(() => {
+                // Sadece işlem yapılan yorumun loading durumunu sıfırlayalım
+                setReplyInProgress(prev => ({
+                    ...prev,
+                    [id]: false
+                }));
             });
-
-            // Normalde burada state güncellemesi olacak:
-            // setMockComments(updatedComments);
-
-            toast.success('Yanıt silindi!');
-            setReplyInProgress(false);
-        }, 500);
-    };
-
-    // Yeni hikaye ekleme fonksiyonu
-    const handleStorySuccess = (storyData) => {
-        console.log('Yeni hikaye:', storyData);
-
-        // Gerçek bir uygulamada burada veritabanına kaydetme işlemi yapılır
-        // Şimdilik mevcut hikayelere ekliyoruz (mock veri)
-        const newStory = {
-            id: mockStories.length + 1,
-            name: storyData.name,
-            tarih: new Date().toLocaleDateString('tr-TR'),
-            hikaye: storyData.hikaye,
-            image: "/images/person-1.webp" // Gerçek uygulamada yüklenen resmin URL'si kullanılır
-        };
-
-        // Mock veriyi güncelliyoruz (gerçek uygulamada bu kısım farklı olacak)
-        // setMockStories([newStory, ...mockStories]);
-
-        toast.success('Hikaye başarıyla eklendi!');
     };
 
     // Takvimde bir tarih seçildiğinde
@@ -471,7 +595,7 @@ export default function FirmaProfilPage() {
         console.log('Randevu işlemi:', newRandevu);
         // Gerçek uygulamada API çağrısı burada yapılabilir
 
-        if (newRandevu.id && mockRandevular.some(r => r.id === newRandevu.id)) {
+        if (newRandevu.id && randevular.some(r => r.id === newRandevu.id)) {
             // Randevu güncelleme durumu
             // Mock veriyi güncelle (gerçek uygulamada farklı olacak)
             // const updatedMockRandevular = mockRandevular.map(r =>
@@ -492,12 +616,13 @@ export default function FirmaProfilPage() {
     const handleProfileImageChange = async (newImage) => {
         setProfileImage(newImage);
 
+
         // Gerçek uygulamada burada veritabanına kaydetme işlemi yapılabilir
         try {
             const { error } = await supabase
                 .from('businesses')
                 .update({
-                    profile_image: newImage ? newImage.src : null,
+                    profile_image_url: newImage ? newImage.src : null,
                     updated_at: new Date().toISOString()
                 })
                 .eq('owner_id', user.id);
@@ -513,29 +638,6 @@ export default function FirmaProfilPage() {
 
     const handleBusinessImagesChange = (newImages) => {
         setBusinessImages(newImages);
-    };
-
-    const handleSaveBusinessImages = async () => {
-        setSavingImages(true);
-
-        try {
-            const { error } = await supabase
-                .from('businesses')
-                .update({
-                    images: businessImages,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('owner_id', user.id);
-
-            if (error) throw error;
-
-            toast.success('İşletme resimleri güncellendi');
-        } catch (error) {
-            console.error('İşletme resimleri güncelleme hatası:', error);
-            toast.error('İşletme resimleri güncellenirken bir hata oluştu');
-        } finally {
-            setSavingImages(false);
-        }
     };
 
     // Teklif başarıyla gönderildiğinde
@@ -611,6 +713,52 @@ export default function FirmaProfilPage() {
         setRezervasyonModalOpen(true);
     };
 
+    // Yeni bir soruCevap eklendiğinde çağrılacak fonksiyon
+    const handleSoruCevapSuccess = (newSoruCevap) => {
+        // Yeni soru-cevap'ı mevcut listeye ekle
+        setSorular(prev => [newSoruCevap, ...prev]);
+        toast.success('Soru & Cevap başarıyla eklendi!');
+    };
+
+    // Soru yanıtlama işlevleri
+    const handleSoruYanitChange = (id, value) => {
+        setSoruYanitlar(prev => ({
+            ...prev,
+            [id]: value
+        }));
+    };
+
+    const handleSoruYanitla = (id) => {
+        if (!soruYanitlar[id]?.trim()) return;
+
+        setYanitGonderiliyor(true);
+
+        // API'ye istek gönder
+        handleSoruCevap(id, soruYanitlar[id])
+            .then(() => {
+                // State'i temizle
+                setSoruYanitlar(prev => {
+                    const newState = { ...prev };
+                    delete newState[id];
+                    return newState;
+                });
+            })
+            .finally(() => {
+                setYanitGonderiliyor(false);
+            });
+    };
+
+    // Takvim için randevu ve rezervasyon verilerini hazırla
+    const randevuEvents = randevular.map(randevu => ({
+        ...randevu,
+        type: 'randevu'
+    }));
+
+    const rezervasyonEvents = rezervasyonlar.map(rezervasyon => ({
+        ...rezervasyon,
+        type: 'rezervasyon'
+    }));
+
     // Kullanıcı giriş yapmamışsa veya firma hesabı değilse
     if (authLoading) {
         return (
@@ -664,7 +812,7 @@ export default function FirmaProfilPage() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : (
-                    <Tabs defaultValue="profil">
+                    <Tabs defaultValue={activeTab}>
                         <TabsList className="mb-8 flex flex-wrap gap-2">
                             <TabsTrigger value="profil">Firma Bilgileri</TabsTrigger>
                             <TabsTrigger value="teklifler">Teklifler</TabsTrigger>
@@ -672,7 +820,6 @@ export default function FirmaProfilPage() {
                             <TabsTrigger value="randevular">Randevular</TabsTrigger>
                             <TabsTrigger value="sorucevap">Soru-Cevap</TabsTrigger>
                             <TabsTrigger value="yorumlar">Yorumlar</TabsTrigger>
-                            <TabsTrigger value="stories">Nişan Hikayeleri</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="profil" className="bg-white rounded-lg shadow-sm p-6">
@@ -712,7 +859,7 @@ export default function FirmaProfilPage() {
                                             value={firmaProfil.firma_adi}
                                             onChange={handleChange}
                                             className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            disabled={loading}
+                                            disabled={submitLoading}
                                             required
                                         />
                                     </div>
@@ -746,7 +893,7 @@ export default function FirmaProfilPage() {
                                                 value={firmaProfil.telefon}
                                                 onChange={handleChange}
                                                 className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                disabled={loading}
+                                                disabled={submitLoading}
                                             />
                                         </div>
                                     </div>
@@ -762,7 +909,7 @@ export default function FirmaProfilPage() {
                                             value={firmaProfil.adres}
                                             onChange={handleChange}
                                             className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            disabled={loading}
+                                            disabled={submitLoading}
                                         />
                                     </div>
 
@@ -777,7 +924,7 @@ export default function FirmaProfilPage() {
                                                 value={firmaProfil.il_id || ''}
                                                 onChange={handleChange}
                                                 className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                disabled={loading}
+                                                disabled={submitLoading}
                                             >
                                                 <option value="">Seçiniz</option>
                                                 {turkiyeIlIlce.provinces.sort((a, b) =>
@@ -800,7 +947,7 @@ export default function FirmaProfilPage() {
                                                 value={firmaProfil.ilce_id || ''}
                                                 onChange={handleChange}
                                                 className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                disabled={loading || !firmaProfil.il_id}
+                                                disabled={submitLoading || !firmaProfil.il_id}
                                             >
                                                 <option value="">Seçiniz</option>
                                                 {ilceler.map(district => (
@@ -823,17 +970,43 @@ export default function FirmaProfilPage() {
                                             onChange={handleChange}
                                             rows={4}
                                             className="w-full border border-border rounded-md p-3 text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            disabled={loading}
+                                            disabled={submitLoading}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-text mb-1">
+                                            Mekan Özellikleri
+                                        </label>
+                                        <TagInput
+                                            tags={firmaProfil.ozellikler || []}
+                                            onTagsChange={(newTags) => setFirmaProfil(prev => ({ ...prev, ozellikler: newTags }))}
+                                            placeholder="Özellik ekleyin (örn: Açık Alan, Havuz, Otopark...)"
+                                            maxTags={10}
+                                            disabled={submitLoading}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-text mb-1">
+                                            Sunulan Hizmetler
+                                        </label>
+                                        <TagInput
+                                            tags={firmaProfil.hizmetler || []}
+                                            onTagsChange={(newTags) => setFirmaProfil(prev => ({ ...prev, hizmetler: newTags }))}
+                                            placeholder="Hizmet ekleyin (örn: DJ, Fotoğrafçı, Catering...)"
+                                            maxTags={10}
+                                            disabled={submitLoading}
                                         />
                                     </div>
 
                                     <div>
                                         <Button
                                             type="submit"
-                                            disabled={loading}
+                                            disabled={submitLoading}
                                             className="w-full md:w-auto"
                                         >
-                                            {loading ? (
+                                            {submitLoading ? (
                                                 <>
                                                     <Loader2 size={18} className="mr-2 animate-spin" />
                                                     Kaydediliyor...
@@ -888,6 +1061,42 @@ export default function FirmaProfilPage() {
                                                 )}
                                             </div>
                                         </div>
+
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500 mb-2">Mekan Özellikleri</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {firmaProfil.ozellikler?.length > 0 ? (
+                                                    firmaProfil.ozellikler.map((ozellik, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-primary/10 text-primary"
+                                                        >
+                                                            {ozellik}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-gray-400 italic">Henüz özellik eklenmemiş</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500 mb-2">Sunulan Hizmetler</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {firmaProfil.hizmetler?.length > 0 ? (
+                                                    firmaProfil.hizmetler.map((hizmet, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-primary/10 text-primary"
+                                                        >
+                                                            {hizmet}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-gray-400 italic">Henüz hizmet eklenmemiş</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -899,21 +1108,8 @@ export default function FirmaProfilPage() {
                                     maxImages={10}
                                     title="İşletme Fotoğrafları"
                                     description="Mekanınızı en iyi şekilde tanıtan fotoğraflar ekleyin. İlk fotoğraf kapak fotoğrafı olarak görüntülenecektir."
+                                    businessId={businessData?.id}
                                 />
-
-                                <div className="mt-6 flex justify-end">
-                                    <Button
-                                        onClick={handleSaveBusinessImages}
-                                        disabled={savingImages}
-                                    >
-                                        {savingImages ? (
-                                            <>
-                                                <Loader2 size={18} className="mr-2 animate-spin" />
-                                                Kaydediliyor...
-                                            </>
-                                        ) : 'Resimleri Kaydet'}
-                                    </Button>
-                                </div>
                             </div>
                         </TabsContent>
 
@@ -1088,7 +1284,7 @@ export default function FirmaProfilPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {mockRezervasyon.map((rezervasyon) => (
+                                            {rezervasyonlar.map((rezervasyon) => (
                                                 <tr key={rezervasyon.id}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-medium text-gray-900">{rezervasyon.musteri}</div>
@@ -1111,21 +1307,21 @@ export default function FirmaProfilPage() {
                                                         {rezervasyon.paket}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {rezervasyon.misafirSayisi}
+                                                        {rezervasyon.misafir_sayisi}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${rezervasyon.odemeDurumu === "Tamamı Ödendi" ? "bg-green-100 text-green-800" :
-                                                            rezervasyon.odemeDurumu === "Kapora Alındı" ? "bg-yellow-100 text-yellow-800" :
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${rezervasyon.odeme_durumu === "Tamamı Ödendi" ? "bg-green-100 text-green-800" :
+                                                            rezervasyon.odeme_durumu === "Kapora Alındı" ? "bg-yellow-100 text-yellow-800" :
                                                                 "bg-gray-100 text-gray-800"
                                                             }`}>
-                                                            {rezervasyon.odemeDurumu}
+                                                            {rezervasyon.odeme_durumu}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {rezervasyon.tutar.toLocaleString('tr-TR')} ₺
+                                                        {rezervasyon.tutar?.toLocaleString('tr-TR')} ₺
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {rezervasyon.type}
+                                                        {rezervasyon.tur}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <Button
@@ -1145,7 +1341,7 @@ export default function FirmaProfilPage() {
                                 </div>
                             )}
 
-                            {mockRezervasyon.length === 0 && rezervasyonView === 'list' && (
+                            {rezervasyonlar.length === 0 && rezervasyonView === 'list' && (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">Henüz rezervasyon bulunmamaktadır.</p>
                                 </div>
@@ -1214,7 +1410,7 @@ export default function FirmaProfilPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {mockRandevular.map((randevu) => (
+                                            {randevular.map((randevu) => (
                                                 <tr key={randevu.id}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-medium text-gray-900">{randevu.musteri}</div>
@@ -1264,7 +1460,7 @@ export default function FirmaProfilPage() {
                                 </div>
                             )}
 
-                            {mockRandevular.length === 0 && randevuView === 'list' && (
+                            {randevular.length === 0 && randevuView === 'list' && (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">Henüz randevu bulunmamaktadır.</p>
                                 </div>
@@ -1275,7 +1471,11 @@ export default function FirmaProfilPage() {
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold">Soru & Cevaplar</h2>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        className="flex items-center gap-1"
+                                        onClick={() => setSoruCevapModalOpen(true)}
+                                    >
                                         <Plus size={16} />
                                         Soru & Cevap Ekle
                                     </Button>
@@ -1283,7 +1483,7 @@ export default function FirmaProfilPage() {
                             </div>
 
                             <div className="space-y-4">
-                                {mockSorular.map((soru) => (
+                                {sorular.map((soru) => (
                                     <div key={soru.id} className="border rounded-lg p-4">
                                         <div className="flex justify-between">
                                             <div className="font-medium">{soru.musteri}</div>
@@ -1304,9 +1504,23 @@ export default function FirmaProfilPage() {
                                                     className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-primary focus:border-primary"
                                                     rows="2"
                                                     placeholder="Bu soruyu yanıtlayın..."
+                                                    value={soruYanitlar[soru.id] || ''}
+                                                    onChange={(e) => handleSoruYanitChange(soru.id, e.target.value)}
+                                                    disabled={yanitGonderiliyor}
                                                 ></textarea>
                                                 <div className="mt-2 flex justify-end">
-                                                    <Button size="sm">Yanıtla</Button>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handleSoruYanitla(soru.id)}
+                                                        disabled={yanitGonderiliyor || !soruYanitlar[soru.id]?.trim()}
+                                                    >
+                                                        {yanitGonderiliyor ? (
+                                                            <>
+                                                                <span className="animate-spin mr-2">●</span>
+                                                                Yanıtlanıyor...
+                                                            </>
+                                                        ) : 'Yanıtla'}
+                                                    </Button>
                                                 </div>
                                             </div>
                                         )}
@@ -1314,7 +1528,7 @@ export default function FirmaProfilPage() {
                                 ))}
                             </div>
 
-                            {mockSorular.length === 0 && (
+                            {sorular.length === 0 && (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">Henüz soru bulunmamaktadır.</p>
                                 </div>
@@ -1328,14 +1542,14 @@ export default function FirmaProfilPage() {
                                     <div className="text-yellow-700 font-medium flex items-center">
                                         <span>Ortalama Puan:</span>
                                         <span className="mx-2 text-xl">
-                                            {mockComments.length > 0
-                                                ? (mockComments.reduce((total, yorum) => total + yorum.puan, 0) / mockComments.length).toFixed(1)
+                                            {yorumlar.length > 0
+                                                ? (yorumlar.reduce((total, yorum) => total + yorum.puan, 0) / yorumlar.length).toFixed(1)
                                                 : 0}
                                         </span>
                                         <div className="flex">
                                             {[...Array(5)].map((_, index) => {
-                                                const rating = mockComments.length > 0
-                                                    ? (mockComments.reduce((total, yorum) => total + yorum.puan, 0) / mockComments.length)
+                                                const rating = yorumlar.length > 0
+                                                    ? (yorumlar.reduce((total, yorum) => total + yorum.puan, 0) / yorumlar.length)
                                                     : 0;
                                                 return (
                                                     <span
@@ -1347,17 +1561,17 @@ export default function FirmaProfilPage() {
                                                 );
                                             })}
                                         </div>
-                                        <span className="ml-2 text-sm text-gray-500">({mockComments.length} yorum)</span>
+                                        <span className="ml-2 text-sm text-gray-500">({yorumlar.length} yorum)</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                {mockComments.map((yorum) => (
+                                {yorumlar.map((yorum) => (
                                     <div key={yorum.id} className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
                                         <div className="flex justify-between items-start">
                                             <div className="font-medium text-lg">{yorum.musteri}</div>
-                                            <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">{yorum.tarih}</div>
+                                            <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">{yorum.tarih}</div>
                                         </div>
                                         <div className="flex items-center mt-2">
                                             {[...Array(5)].map((_, index) => (
@@ -1380,7 +1594,7 @@ export default function FirmaProfilPage() {
                                                         className="text-gray-400 hover:text-red-500 transition-colors"
                                                         title="Yanıtı Sil"
                                                         onClick={() => handleDeleteReply(yorum.id)}
-                                                        disabled={replyInProgress}
+                                                        disabled={replyInProgress[yorum.id]}
                                                     >
                                                         <X size={16} />
                                                     </button>
@@ -1396,15 +1610,15 @@ export default function FirmaProfilPage() {
                                                     placeholder="Bu yorumu yanıtlayın..."
                                                     value={commentReplies[yorum.id] || ''}
                                                     onChange={(e) => handleReplyChange(yorum.id, e.target.value)}
-                                                    disabled={replyInProgress}
+                                                    disabled={replyInProgress[yorum.id]}
                                                 ></textarea>
                                                 <div className="mt-2 flex justify-end">
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleSaveReply(yorum.id)}
-                                                        disabled={!commentReplies[yorum.id]?.trim() || replyInProgress}
+                                                        disabled={!commentReplies[yorum.id]?.trim() || replyInProgress[yorum.id]}
                                                     >
-                                                        {replyInProgress ? (
+                                                        {replyInProgress[yorum.id] ? (
                                                             <>
                                                                 <Loader2 size={14} className="mr-2 animate-spin" />
                                                                 Kaydediliyor...
@@ -1418,66 +1632,9 @@ export default function FirmaProfilPage() {
                                 ))}
                             </div>
 
-                            {mockComments.length === 0 && (
+                            {yorumlar.length === 0 && (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">Henüz yorum bulunmamaktadır.</p>
-                                </div>
-                            )}
-                        </TabsContent>
-
-                        <TabsContent value="stories" className="bg-white rounded-lg shadow-sm p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-semibold">Nişan Hikayeleri</h2>
-                                <Button
-                                    variant="default"
-                                    className="flex items-center gap-2 shadow-sm"
-                                    onClick={() => setStoryModalOpen(true)}
-                                >
-                                    <Plus size={16} />
-                                    Hikaye Ekle
-                                </Button>
-                            </div>
-
-                            <div className="space-y-8">
-                                {mockStories.map((story) => (
-                                    <div key={story.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 bg-white">
-                                        <div className="flex flex-col md:flex-row h-full">
-                                            <div className="md:w-2/5 relative h-72 md:h-auto min-h-[280px] overflow-hidden">
-                                                <Image
-                                                    src={story.image}
-                                                    alt={`${story.name} fotoğrafı`}
-                                                    fill
-                                                    className="object-cover hover:scale-105 transition-transform duration-700"
-                                                    sizes="(max-width: 768px) 100vw, 40vw"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                                            </div>
-                                            <div className="md:w-3/5 p-6 md:p-8 flex flex-col bg-white">
-                                                <div className="flex flex-col sm:justify-between sm:items-start gap-2 mb-4">
-                                                    <h3 className="text-xl font-semibold text-primary leading-tight">{story.name}</h3>
-                                                    <div className="flex gap-2">
-                                                        <span className="text-sm text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full whitespace-nowrap">{story.category == 'nisan' ? 'Nişan' : 'Söz-Nişan'}</span>
-                                                        <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full whitespace-nowrap">{story.tarih}</span>
-                                                    </div>
-                                                </div>
-                                                <p className="text-gray-700 flex-grow mb-5 leading-relaxed">{story.hikaye}</p>
-                                                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                                                    <Button variant="outline" size="sm" className="px-4 py-2">
-                                                        <Edit size={15} className="mr-2" /> Düzenle
-                                                    </Button>
-                                                    <Button variant="outline" size="sm" className="px-4 py-2 text-red-500 hover:text-white hover:bg-red-500">
-                                                        <X size={15} className="mr-2" /> Kaldır
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {mockStories.length === 0 && (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500">Henüz nişan hikayesi bulunmamaktadır.</p>
                                 </div>
                             )}
                         </TabsContent>
@@ -1489,12 +1646,6 @@ export default function FirmaProfilPage() {
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onSuccess={handleCallMeSuccess}
-            />
-
-            <StoryModal
-                isOpen={storyModalOpen}
-                onClose={() => setStoryModalOpen(false)}
-                onSuccess={handleStorySuccess}
             />
 
             <EventDetailsModal
@@ -1546,6 +1697,12 @@ export default function FirmaProfilPage() {
                     onSuccess={handleTeklifSuccess}
                 />
             )}
+
+            <SoruCevapModal
+                isOpen={soruCevapModalOpen}
+                onClose={() => setSoruCevapModalOpen(false)}
+                onSuccess={handleSoruCevapSuccess}
+            />
 
             <Toaster position="top-right" />
         </Layout>
